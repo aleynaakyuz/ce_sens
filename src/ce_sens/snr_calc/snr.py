@@ -1,6 +1,5 @@
 import numpy as np
 from pycbc.psd.read import from_txt
-from pycbc.waveform import get_fd_waveform
 from pycbc.psd.read import from_txt
 from pycbc.filter import sigma
 from ce_sens.utils import get_proj_strain
@@ -28,7 +27,6 @@ def calculate_snr(det, psd, param, low_freq):
     proj_strain = get_proj_strain(det, param)
     amp = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_freq)
     return amp  
-
 
 def opt_df_static(final_data, det, psd):
     df = final_data['delta_f']

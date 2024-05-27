@@ -36,6 +36,12 @@ def get_proj_strain(det, param, freq=False):
     proj_strain = f_plus * hp + f_cross * hc
     return proj_strain
 
+def get_dic(data_path):
+    data = h5py.File(data_path, 'r')
+    temp_params = list(data.keys())
+    parameters = {key: key for key in temp_params}
+    data_dic = {key: data[dataset_key][:] for key, dataset_key in parameters.items()}
+    return data_dic
 
 def get_parameter_list(data_path, apx, df, low_freq):
     data = h5py.File(data_path, 'r')
