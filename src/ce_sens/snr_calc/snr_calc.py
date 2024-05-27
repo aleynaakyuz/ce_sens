@@ -8,6 +8,8 @@ from ce_sens.snr_calc.snr import read_psds, opt_df_static, opt_df_dynamic
 def snr_calc():
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=str, help="path to parameters")
+    parser.add_argument("start", type=int, help="start of the parameter index")
+    parser.add_argument("end", type=int, help="end of the parameter index")
     parser.add_argument("det", help="detector names")
     parser.add_argument("low_freq_cutoff", type=float, help="low_freq_cutoff")
     parser.add_argument("df_max", type=float, help="maximum delta_f")
@@ -21,6 +23,8 @@ def snr_calc():
 
     args = parser.parse_args()
     input_path = args.path
+    start = args.start 
+    end = args.end
     det = args.det
     low_freq = args.low_freq_cutoff
     df_max = args.df_max
@@ -46,7 +50,7 @@ def snr_calc():
         snr_list = []
         psd_dic = read_psds(psd_path, df_max, low_freq)
         dynamic_psd_dic = read_psds(dynamic_psd, df_max, low_freq)
-        for i in tqdm(range(1000)): ## Fix here!!
+        for i in tqdm(range(start, end)):
             temp_data = {key: value[i] for key, value in data_dic.items()}
             param = {**temp_data, **parameters2}
             mer_t = merger_time(param)
@@ -60,7 +64,7 @@ def snr_calc():
     else:
         snr_list = []
         psd = read_psds(psd_path, df_max, low_freq)
-        for i in tqdm(range(10000)):
+        for i in tqdm(range(start, end)):
             temp_data = {key: value[i] for key, value in data_dic.items()}
             param = {**temp_data, **parameters2}
             snr = opt_df_static(param, det, psd)
