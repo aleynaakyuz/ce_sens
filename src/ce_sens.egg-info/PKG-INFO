@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: ce_sens
+Version: 0.0.1
+Summary: Early warning and dynamical switching of Cosmic Explorer
+Author-email: Aleyna Akyuz <aakyuz@syr.edu>
+Project-URL: Homepage, https://github.com/aleynaakyuz/ce_sens
+Project-URL: Bug Tracker, https://github.com/aleynaakyuz/ce_sens/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Requires-Dist: matplotlib==3.7.3
+Requires-Dist: matplotlib-inline==0.1.6
+Requires-Dist: numpy==1.23.5
+Requires-Dist: pycbc==2.4.0
+Requires-Dist: h5py==3.9.0
+Requires-Dist: tqdm==4.66.1
+Requires-Dist: sympy==1.12
+
+# ce_sens
