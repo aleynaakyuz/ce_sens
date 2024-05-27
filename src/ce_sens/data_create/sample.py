@@ -26,24 +26,38 @@ def number_of_samples(rho, c, z_max):
     number = tot_rate * c
     return int(number)
 
-def other_params(samples, tot_rate, coa_rate, z_max):
+def other_params(samples, tot_rate, coa_rate, z_max, type):
+    params = {}
+    
     dist = distance_from_rate(tot_rate, coa_rate, maxz=z_max, npoints=1000)
+    params.update({'distance':dist})
     z = redshift(dist)
-    mass1 = samples['srcmass1'] * (1+z)
-    mass2 = samples['srcmass2'] * (1+z)
-    return dist, z, mass1, mass2
+    params.update({'redshift':z})
 
-def make_hdf5(samples, output_path, dist, z, mass1, mass2):
+    if type=='BBH':
+        print('IN BBH')
+        srcmass2 = samples['srcmass1'][:] * samples['q'][:]
+        mass2 = srcmass2 * (1+z)
+        params.update({'srcmass2':srcmass2})
+        params.update({'mass2':mass2})    
+    else:
+        print('IN BNS')
+        mass2 = samples['srcmass2'][:] * (1+z)
+        params.update({'mass2':mass2})
+
+    mass1 = samples['srcmass1'][:] * (1+z)
+    params.update({'mass1':mass1})
+    return params
+
+def make_hdf5(samples, output_path, params):
     with h5py.File(output_path, 'w') as hf:
         for i in samples.fieldnames:
             hf.create_dataset(str(i), data=samples[str(i)])
-        hf.create_dataset('distance', data=dist)
-        hf.create_dataset('redshift', data=z)
-        hf.create_dataset('mass1', data=mass1)
-        hf.create_dataset('mass2', data=mass2)
+        for key in params.keys():
+            hf.create_dataset(key, data=params[key])
     hf.close()
 
-def create_data(inp_path, out_path, rho, time, z_max):
+def create_data(inp_path, out_path, rho, time, z_max, type):
     c = normalization_const(rho, time)
     num = number_of_samples(rho, c, z_max)
     
@@ -57,8 +71,8 @@ def create_data(inp_path, out_path, rho, time, z_max):
     samples = joint_dist.rvs(num)
     tot_rate = samples['total_rate']
 
-    dist, z, mass1, mass2 = other_params(samples, tot_rate, coa_rate, z_max)
+    params = other_params(samples, tot_rate, coa_rate, z_max, type)
 
-    data = make_hdf5(samples, out_path, dist, z, mass1, mass2)
+    data = make_hdf5(samples, out_path, params)
 
     return data
