@@ -69,15 +69,15 @@ def early_warning_calc():
 
     psd_dic = {key: psd for key in det_list for psd in psd_paths}
 
-    detections = det_snr > 10
+    detections = det_snr[start,end] > 10
 
     hf = h5py.File(out_path, 'w')
     for det in det_list:
         param_list = get_parameter_list(param_path, apx, df, low_freq_dic[det])
-        detected_params = np.array(param_list)[detections]
+        detected_params = np.array(param_list)[start,end][detections]
         for t in time:
             snr_l = []
-            for i in range(start,end):
+            for i in tqdm(range(len(detected_params))):
                 ew_snrs = early_warning(t, detected_params[i], det, psd_dic[det], dynamic_psd, lag, switch_duration)
                 snr_l.append(ew_snrs)
             hf.create_dataset(str(t), data=ew_snrs)
