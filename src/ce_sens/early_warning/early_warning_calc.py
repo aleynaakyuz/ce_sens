@@ -15,6 +15,7 @@ def early_warning_calc():
     parser.add_argument("time", nargs=1, type=int, help="Early warning time in seconds. If there are more than one time requested, give as a list")
     parser.add_argument("snr_path_1", type=str, help="First detector that has snr calculation")
     parser.add_argument("snr_path_2", help="First detector that has snr calculation")
+    parser.add_argument("start", type=int, help="start of the parameter index")
     parser.add_argument("end", type=int, help="end of the parameter index")
     parser.add_argument("det", help="detector names")
     parser.add_argument("dynamic_psd", nargs='?', help="First detector that has snr calculation")
