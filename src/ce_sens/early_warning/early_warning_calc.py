@@ -75,11 +75,9 @@ def early_warning_calc():
     for det in det_list:
         param_list = get_parameter_list(param_path, apx, df, low_freq_dic[det])
         detected_params = np.array(param_list)[start:end][detections]
-        for t in time:
-            snr_l = []
-            for i in tqdm(range(len(detected_params))):
-                ew_snrs = early_warning(t, detected_params[i], det, psd_dic[det], dynamic_psd, lag, switch_duration)
-                snr_l.append(ew_snrs)
-            hf.create_dataset(str(t), data=ew_snrs)
+        snr_l = []
+        for i in tqdm(range(len(detected_params))):
+            ew_snrs = early_warning(time, detected_params[i], det, psd_dic[det], dynamic_psd, lag, switch_duration)
+            snr_l.append(ew_snrs)
         hf.create_dataset(str(det), data=snr_l)
     hf.close()
