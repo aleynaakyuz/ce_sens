@@ -73,12 +73,13 @@ def early_warning_calc():
 
     hf = h5py.File(out_path, 'w')
     for det in det_list:
-        snr_l = []
         param_list = get_parameter_list(param_path, apx, df, low_freq_dic[det])
         detected_params = np.array(param_list)[detections]
         for t in time:
+            snr_l = []
             for i in range(start,end):
                 ew_snrs = early_warning(t, detected_params[i], det, psd_dic[det], dynamic_psd, lag, switch_duration)
+                snr_l.append(ew_snrs)
             hf.create_dataset(str(t), data=ew_snrs)
         hf.create_dataset(str(det), data=snr_l)
     hf.close()
