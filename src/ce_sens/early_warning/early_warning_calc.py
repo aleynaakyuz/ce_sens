@@ -17,7 +17,6 @@ def early_warning_calc():
     parser.add_argument("snr_path_2", help="First detector that has snr calculation")
     parser.add_argument("start", type=int, help="start of the parameter index")
     parser.add_argument("end", type=int, help="end of the parameter index")
-    parser.add_argument("det", help="detector names")
     parser.add_argument("dynamic_psd", nargs='?', help="First detector that has snr calculation")
     parser.add_argument("lag", type=float, nargs='?', help="If the psd is dynamic, switch time before the intersection")
     parser.add_argument("switch_duration", type=float, nargs='?', help="If psd is dynamic, duration of the switch")
@@ -42,8 +41,8 @@ def early_warning_calc():
     psd_path_3 = args.psd_path_3
     dynamic_psd = args.dynamic_psd
 
-    start = args.start 
     end = args.end
+    start = args.start
 
     low_freq_dic = {'J1': 5.2, 'J2':5.2, 'E1':1, 'I1': 3}
     df = 0.1 ## REVISIT THIS
