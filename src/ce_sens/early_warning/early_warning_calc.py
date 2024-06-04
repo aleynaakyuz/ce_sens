@@ -71,7 +71,7 @@ def early_warning_calc():
 
     detections = det_snr[start:end] > 10
     hf_d = h5py.File(str(start), 'w')
-    hf_d.create_dataset('det_params.h5', detections)
+    hf_d.create_dataset('det_params.h5', data=detections)
     hf.close()
 
     hf = h5py.File(out_path, 'w')
