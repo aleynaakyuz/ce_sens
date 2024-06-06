@@ -27,7 +27,7 @@ dependencies = [
 data_create = "ce_sens.data_create.data_create:data_create"
 early_warning_calc = "ce_sens.early_warning.early_warning_calc:early_warning_calc"
 snr_calc = "ce_sens.snr_calc.snr_calc:snr_calc"
-bns_pm = "ce_sens.pm.bns_pm_calc:bns_pm_calc"
+bns_pm_calc = "ce_sens.pm.bns_pm_calc:bns_pm_calc"
 
 [project.urls]
 "Homepage" = "https://github.com/aleynaakyuz/ce_sens"
