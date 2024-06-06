@@ -55,9 +55,15 @@ def snr_calc():
             param = {**temp_data, **parameters2}
             mer_t = merger_time(param)
             if mer_t > 0:
-                snr = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
+                try:
+                    snr = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
+                except:
+                    snr = 0
             else:
-                snr = opt_df_static(param, det, psd_dic)
+                try:
+                    snr = opt_df_static(param, det, psd_dic)
+                except:
+                    snr = 0
             snr_list.append(snr)
 
 
@@ -65,9 +71,13 @@ def snr_calc():
         snr_list = []
         psd = read_psds(psd_path, df_max, low_freq)
         for i in tqdm(range(start, end)):
-            temp_data = {key: value[i] for key, value in data_dic.items()}
-            param = {**temp_data, **parameters2}
-            snr = opt_df_static(param, det, psd)
+            try:
+                temp_data = {key: value[i] for key, value in data_dic.items()}
+                param = {**temp_data, **parameters2}
+                snr = opt_df_static(param, det, psd)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                snr = 0
             snr_list.append(snr)
 
     hf.create_dataset(str(det), data=snr_list)

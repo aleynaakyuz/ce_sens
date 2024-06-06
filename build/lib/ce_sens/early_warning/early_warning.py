@@ -41,7 +41,6 @@ def stitching_psds(psd_1, psd_2, lag, switch_duration, param):
     return new_psd_fs
 
 def early_warning(time, param, det, psd_path_1, dynamic_psd, dynamic, lag=None, switch_duration=None):
-    snr_l = []
     low_f = param['f_lower']
     df = param['delta_f']
     soln = minimize(find_freq, x0=70, args=(param,time), method='Nelder-Mead')
@@ -57,5 +56,4 @@ def early_warning(time, param, det, psd_path_1, dynamic_psd, dynamic, lag=None, 
         #print('here')
         psd = from_txt(psd_path_1, low_freq_cutoff=low_f, length=int(4000/df), delta_f=df)
         snr = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_f, high_frequency_cutoff=max(x, 5.5))
-    snr_l.append(snr)
-    return snr_l
+    return snr
