@@ -98,7 +98,7 @@ def pm_snr(psds, temp_data, php_l, phc_l, lenn):
         ant = {}
         for ifo in psds.keys():
             fp, fc = det[ifo].antenna_pattern(temp_data['ra'][i], temp_data['dec'][i],
-                                    temp_data['pol'][i], time)
+                                    temp_data['polarization'][i], time)
             ant[ifo] = fp, fc
             
         for ifo in psds.keys():
