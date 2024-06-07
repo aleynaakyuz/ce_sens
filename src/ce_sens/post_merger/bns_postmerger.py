@@ -9,7 +9,7 @@ import h5py, lal
 import numpy as np
 
 def get_temp():
-    f = h5py.File('/Users/aleyna/ce-plots/pm/data.h5', 'r')
+    f = h5py.File('/home/aakyuz/runs3/pm/data.h5', 'r')
     d = f['rh_22/Rh_l2_m2_r01000.txt'][:]
     t = d[:,0] * lal.MTSUN_SI * 2.7
     dx = t[1] - t[0]
