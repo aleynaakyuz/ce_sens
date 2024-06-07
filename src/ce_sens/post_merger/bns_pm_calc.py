@@ -85,7 +85,7 @@ def bns_pm_calc():
     "phase_order": -1
     }
 
-    temp_data = {key: value[detections] for key, value in data_dic.items()}
+    temp_data = {key: value[start:end][detections] for key, value in data_dic.items()}
 
     hr_l, mlen_l = create_td_data(temp_data, parameters2, hp, lenn)
 
