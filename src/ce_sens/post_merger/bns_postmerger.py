@@ -25,7 +25,7 @@ def create_td_data(temp_data, param2, hp, lenn):
     for i in trange(lenn):
         temp_param = {key: temp_data[key][i] for key in temp_data.keys()}
         param = {**temp_param, **param2}
-        hr, _ = get_td_waveform(**param[i])
+        hr, _ = get_td_waveform(**param)
         mlen = max(len(hp), len(hr))
         hr_l.append(hr)
         mlen_l.append(mlen)
