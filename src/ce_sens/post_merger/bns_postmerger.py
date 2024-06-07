@@ -58,8 +58,8 @@ def match_data(hp, hc, hr_l, mlen_l, lenn):
     return s_lst, i_lst, hp_lst, hc_lst, hr_lst, snr_l
 
 def align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, lenn):
-    n = sigma(hp_lst[inx], low_frequency_cutoff=300, high_frequency_cutoff=700)
     for inx in trange(lenn):
+        n = sigma(hp_lst[inx], low_frequency_cutoff=300, high_frequency_cutoff=700)
         sdif = hp_lst[inx].start_time - hr_lst[inx].start_time
         hp_lst[inx].start_time += i_lst[inx] * snr_l[inx].delta_t  - sdif
         hc_lst[inx].start_time += i_lst[inx] * snr_l[inx].delta_t  - sdif
