@@ -8,6 +8,13 @@ import matplotlib.pyplot as plt
 import h5py, lal
 import numpy as np
 
+slen = 10
+srate = 10000
+tlen = slen * srate
+flen = tlen // 2 + 1
+df = 1.0 / slen
+dt = 1.0 / srate
+
 def get_temp():
     f = h5py.File('/home/aakyuz/runs3/pm/data.h5', 'r')
     d = f['rh_22/Rh_l2_m2_r01000.txt'][:]
