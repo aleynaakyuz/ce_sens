@@ -61,11 +61,17 @@ def snr_calc():
                     snr, sf, ef = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
                 except:
                     snr = 0
+                    sf = 0
+                    ef = 0
             else:
                 try:
-                    snr, sf, ef = opt_df_static(param, det, psd_dic)
+                    snr = opt_df_static(param, det, psd_dic)
+                    sf = 0
+                    ef = 0
                 except:
                     snr = 0
+                    sf = 0
+                    ef = 0
             snr_list.append(snr)
             sf_list.append(sf)
             ef_list.append(ef)
