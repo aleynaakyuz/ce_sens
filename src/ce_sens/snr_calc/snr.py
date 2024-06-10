@@ -51,11 +51,11 @@ def opt_df_dynamic(param, det, psd, dynamic_psd, lag, switch_duration):
     while df > df_min:
         df = df/2
         param.update({"delta_f": df})
-        new_psd = stitching_psds(psd[df], dynamic_psd[df], lag, switch_duration, param)
+        new_psd, sf, ef = stitching_psds(psd[df], dynamic_psd[df], lag, switch_duration, param)
         snr_s = calculate_snr(det, new_psd, param, low_freq)
         if abs(snr_l - snr_s) < 0.1:
             break
         else:
             snr_l = snr_s
             continue
-    return snr_l
+    return snr_l, sf, ef
