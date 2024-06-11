@@ -72,7 +72,9 @@ def bns_pm_calc():
         sum_snr = net_snr + det_snr**2
     det_snr = np.sqrt(sum_snr)
 
-    detections = det_snr > 10
+    detections = det_snr[start:end] > 10
+    
+    lenn = sum(detections)
 
     data_dic = get_dic(input_path)
 
@@ -83,15 +85,15 @@ def bns_pm_calc():
     "phase_order": -1
     }
 
-    temp_data = {key: value[detections] for key, value in data_dic.items()}
+    temp_data = {key: value[start:end][detections] for key, value in data_dic.items()}
 
-    hr_l, mlen_l = create_td_data(temp_data, parameters2, hp, start, end)
+    hr_l, mlen_l = create_td_data(temp_data, parameters2, hp, lenn)
 
-    s_lst, i_lst, hp_lst, hc_lst, hr_lst, snr_l = match_data(hp, hc, hr_l, mlen_l, start, end)
-    hp_lst, hc_lst = align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, start, end)
-    php_l, phc_l = to_freq(hp_lst, hc_lst, start, end)
+    s_lst, i_lst, hp_lst, hc_lst, hr_lst, snr_l = match_data(hp, hc, hr_l, mlen_l, lenn)
+    hp_lst, hc_lst = align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, lenn)
+    php_l, phc_l = to_freq(hp_lst, hc_lst, lenn)
 
-    snrs = pm_snr(psds, temp_data, php_l, phc_l, start, end)
+    snrs = pm_snr(psds, temp_data, php_l, phc_l, lenn)
 
     hf = h5py.File(out_path, 'w')
     for k in snrs:

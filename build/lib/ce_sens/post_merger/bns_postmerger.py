@@ -8,8 +8,15 @@ import matplotlib.pyplot as plt
 import h5py, lal
 import numpy as np
 
+slen = 10
+srate = 10000
+tlen = slen * srate
+flen = tlen // 2 + 1
+df = 1.0 / slen
+dt = 1.0 / srate
+
 def get_temp():
-    f = h5py.File('/Users/aleyna/ce-plots/pm/data.h5', 'r')
+    f = h5py.File('/home/aakyuz/runs3/pm/data.h5', 'r')
     d = f['rh_22/Rh_l2_m2_r01000.txt'][:]
     t = d[:,0] * lal.MTSUN_SI * 2.7
     dx = t[1] - t[0]
@@ -19,26 +26,26 @@ def get_temp():
     hc = hc.time_slice(-1, hc.end_time)
     return hp, hc
 
-def create_td_data(temp_data, param2, hp, start, end):
+def create_td_data(temp_data, param2, hp, lenn):
     hr_l = []
     mlen_l = []
-    for i in trange(start, end):
+    for i in trange(lenn):
         temp_param = {key: temp_data[key][i] for key in temp_data.keys()}
         param = {**temp_param, **param2}
-        hr, _ = get_td_waveform(**param[i])
+        hr, _ = get_td_waveform(**param)
         mlen = max(len(hp), len(hr))
         hr_l.append(hr)
         mlen_l.append(mlen)
     return hr_l, mlen_l
 
-def match_data(hp, hc, hr_l, mlen_l, start, end):
+def match_data(hp, hc, hr_l, mlen_l, lenn):
     s_lst = []
     i_lst = []
     hp_lst = []
     hc_lst = []
     hr_lst = []
     snr_l = []
-    for inx in trange(start, end):
+    for inx in trange(lenn):
         hp_cp = hp.copy()
         hc_cp = hc.copy()
         
@@ -57,9 +64,9 @@ def match_data(hp, hc, hr_l, mlen_l, start, end):
         snr_l.append(snr)
     return s_lst, i_lst, hp_lst, hc_lst, hr_lst, snr_l
 
-def align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, start, end):
-    n = sigma(hp_lst[inx], low_frequency_cutoff=300, high_frequency_cutoff=700)
-    for inx in trange(start, end):
+def align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, lenn):
+    for inx in trange(lenn):
+        n = sigma(hp_lst[inx], low_frequency_cutoff=300, high_frequency_cutoff=700)
         sdif = hp_lst[inx].start_time - hr_lst[inx].start_time
         hp_lst[inx].start_time += i_lst[inx] * snr_l[inx].delta_t  - sdif
         hc_lst[inx].start_time += i_lst[inx] * snr_l[inx].delta_t  - sdif
@@ -67,10 +74,10 @@ def align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, start, end):
         hc_lst[inx] *= s_lst[inx] / n
     return hp_lst, hc_lst
 
-def to_freq(hp_lst, hc_lst, start, end):
+def to_freq(hp_lst, hc_lst, lenn):
     php_l = []
     phc_l = []
-    for inx in trange(start, end):
+    for inx in trange(lenn):
         hp_cp = hp_lst[inx].copy()
         hc_cp = hc_lst[inx].copy()
 
@@ -83,15 +90,15 @@ def to_freq(hp_lst, hc_lst, start, end):
         phc_l.append(phc)
     return php_l, phc_l
 
-def pm_snr(psds, temp_data, php_l, phc_l, start, end):
+def pm_snr(psds, temp_data, php_l, phc_l, lenn):
     time = 1697205750
     det = {k: Detector(k) for k in psds.keys()}
     snrs = {k: [] for k in psds.keys()}
-    for i in trange(start, end):   
+    for i in trange(lenn):   
         ant = {}
         for ifo in psds.keys():
             fp, fc = det[ifo].antenna_pattern(temp_data['ra'][i], temp_data['dec'][i],
-                                    temp_data['pol'][i], time)
+                                    temp_data['polarization'][i], time)
             ant[ifo] = fp, fc
             
         for ifo in psds.keys():

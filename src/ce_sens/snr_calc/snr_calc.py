@@ -76,7 +76,8 @@ def snr_calc():
             sf_list.append(sf)
             ef_list.append(ef)
 
-
+        hf.create_dataset('start_freq', data=sf_list)
+        hf.create_dataset('end_freq', data=ef_list)
     else:
         snr_list = []
         psd = read_psds(psd_path, df_max, low_freq)
@@ -90,7 +91,5 @@ def snr_calc():
                 snr = 0
             snr_list.append(snr)
 
-    hf.create_dataset('start_freq', data=sf_list)
-    hf.create_dataset('end_freq', data=ef_list)
     hf.create_dataset(str(det), data=snr_list)
     hf.close()
