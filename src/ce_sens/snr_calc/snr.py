@@ -36,7 +36,7 @@ def opt_df_static(final_data, det, psd):
         df = df/2
         final_data.update({"delta_f": df}) 
         snr_s = calculate_snr(det, psd[df], final_data, low_freq)
-        if abs(snr_l - snr_s) / snr_l < 0.1:
+        if abs(snr_l - snr_s) / snr_l < 0.01:
             break
         else:
             snr_l = snr_s
