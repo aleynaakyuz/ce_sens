@@ -5,7 +5,7 @@ from pycbc.filter import sigma
 from ce_sens.utils import get_proj_strain
 from ce_sens.early_warning.early_warning import stitching_psds
 
-df_min = 0.125
+df_min = 0.0001
 f_max = 4000
 
 def read_psds(psd_path, df_max, low_freq): 
@@ -36,7 +36,7 @@ def opt_df_static(final_data, det, psd):
         df = df/2
         final_data.update({"delta_f": df}) 
         snr_s = calculate_snr(det, psd[df], final_data, low_freq)
-        if abs(snr_l - snr_s) < 0.1:
+        if abs(snr_l - snr_s) / snr_l < 0.1:
             break
         else:
             snr_l = snr_s
