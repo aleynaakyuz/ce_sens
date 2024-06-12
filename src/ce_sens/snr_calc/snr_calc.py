@@ -3,7 +3,7 @@ import argparse
 from tqdm import tqdm
 from ce_sens.early_warning.early_warning import merger_time
 from ce_sens.utils import get_dic
-from ce_sens.snr_calc.snr import read_psds, opt_df_static, opt_df_dynamic
+from ce_sens.snr_calc.snr import read_psds, opt_df_static, opt_df_dynamic, calculate_snr
 
 def snr_calc():
     parser = argparse.ArgumentParser()
