@@ -1,10 +1,7 @@
 import numpy as np
 import argparse
 import h5py
-from pycbc.filter import sigma
-from pycbc.detector import Detector
 from pycbc.psd.read import from_txt
-from tqdm import trange
 from ce_sens.utils import get_dic
 from ce_sens.post_merger.bns_postmerger import get_temp, create_td_data, match_data, align_normalize, to_freq, pm_snr
 

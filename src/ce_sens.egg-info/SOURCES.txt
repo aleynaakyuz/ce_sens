@@ -12,6 +12,7 @@ src/ce_sens/data_create/data_create.py
 src/ce_sens/data_create/sample.py
 src/ce_sens/early_warning/early_warning.py
 src/ce_sens/early_warning/early_warning_calc.py
+src/ce_sens/post_merger/bbh_pm.py
 src/ce_sens/post_merger/bns_pm_calc.py
 src/ce_sens/post_merger/bns_postmerger.py
 src/ce_sens/snr_calc/snr.py

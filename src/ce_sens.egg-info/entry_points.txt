@@ -1,4 +1,5 @@
 [console_scripts]
+bbh_pm_calc = ce_sens.post_merger.bbh_pm:bbh_pm_calc
 bns_pm_calc = ce_sens.post_merger.bns_pm_calc:bns_pm_calc
 data_create = ce_sens.data_create.data_create:data_create
 early_warning_calc = ce_sens.early_warning.early_warning_calc:early_warning_calc

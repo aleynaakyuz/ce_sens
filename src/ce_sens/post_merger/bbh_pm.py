@@ -1,11 +1,14 @@
+from pycbc.filter import sigma
+from pycbc.detector import Detector
+from pycbc.waveform import get_td_waveform
+from tqdm import trange
+from pycbc.psd.read import from_txt
+import h5py
 import numpy as np
 import argparse
-import h5py
-from pycbc.psd.read import from_txt
 from ce_sens.utils import get_dic
-from ce_sens.post_merger.bns_postmerger import get_temp, create_td_data, match_data, align_normalize, to_freq, pm_snr
 
-def bns_pm_calc():
+def bbh_pm_calc():
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=str, help="path to parameters")
     parser.add_argument("start", type=int, help="start of the parameter index")
@@ -23,7 +26,7 @@ def bns_pm_calc():
 
     input_path = args.path
     out_path = args.output_path
-    
+
     snr_path_1 = args.snr_path_1
     snr_path_2 = args.snr_path_2
     snr_path_3 = args.snr_path_3
@@ -36,15 +39,21 @@ def bns_pm_calc():
     end = args.end
     start = args.start
 
+    time = 1697205750
     slen = 10
     srate = 10000
     tlen = slen * srate
     flen = tlen // 2 + 1
     df = 1.0 / slen
     dt = 1.0 / srate
+    flow = 5.2
 
-    hp, hc = get_temp()
-    flow = {'J1': 5.2, 'J2':5.2, 'E1':1, 'I1': 3}
+    parameters2 = {
+    "approximant": "IMRPhenomXPHM",
+    "delta_t": dt,
+    "f_lower": 100,
+    "phase_order": -1
+    }
 
     snr_path_lst = [snr_path_1, snr_path_2, snr_path_3]
     snr_paths = [x for x in snr_path_lst if x is not None]
@@ -62,7 +71,7 @@ def bns_pm_calc():
 
     psd_dic = {key: psd for key in det_list for psd in psd_paths}
     psds = {key:from_txt(psd_dic[key], length=flen, delta_f=df, low_freq_cutoff=flow[key]) for key in psd_dic}
-    
+
     net_snr_shape =  len(snr_vals_dic[det_list[0]])
     net_snr = np.zeros(net_snr_shape)
     for det_snr in snr_vals_dic.values():
@@ -70,31 +79,36 @@ def bns_pm_calc():
     det_snr = np.sqrt(sum_snr)
 
     detections = det_snr[start:end] > 10
-    
+
     lenn = sum(detections)
 
     data_dic = get_dic(input_path)
-
-    parameters2 = {
-    "approximant": "TaylorF2",
-    "delta_t": hp.delta_t,
-    "f_lower": 100,
-    "phase_order": -1
-    }
-
     temp_data = {key: value[start:end][detections] for key, value in data_dic.items()}
 
-    hr_l, mlen_l = create_td_data(temp_data, parameters2, hp, lenn)
-
-    s_lst, i_lst, hp_lst, hc_lst, hr_lst, snr_l = match_data(hp, hc, hr_l, mlen_l, lenn)
-    hp_lst, hc_lst = align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, lenn)
-    php_l, phc_l = to_freq(hp_lst, hc_lst, lenn)
-
-    snrs = pm_snr(psds, temp_data, php_l, phc_l, lenn)
+    ra = data_dic['ra']
+    dec = data_dic['dec']
+    pol = data_dic['polarization']
 
     hf = h5py.File(out_path, 'w')
-    for k in snrs:
-        snrs[k] = np.array(snrs[k])
-        hf.create_dataset(str(k), data=snrs[k])
-    hf.close()
+    for det in det_list:
+        snr_l = []
+        for i in trange(start, end):
+            param = {**temp_data[i], **parameters2}
+            hp, hc = get_td_waveform(**param[i])
+            _, loc_hp = hp.abs_max_loc()
+            _, loc_hc = hc.abs_max_loc()
+            hp_pm = hp[loc_hp:]
+            hc_pm = hc[loc_hc:]
+            lenn = max(len(hp_pm), len(hc_pm))
+            hp_pm.resize(lenn)
+            hc_pm.resize(lenn)
+            hp_pm.to_frequencyseries(delta_f=df)
+            hc_pm.to_frequencyseries(delta_f=df)
+            fp, fc = det.antenna_pattern(ra[i], dec[i], pol[i], time)
 
+            proj_strain = hp_pm * fp + hc_pm * fc
+            snr = sigma(proj_strain, psd=psds[det], low_frequency_cutoff=1000,
+                            high_frequency_cutoff=4800)
+            snr_l.append(snr)
+        hf.create_dataset(str(det), data=snr_l)
+    hf.close()
