@@ -70,7 +70,7 @@ def bbh_pm_calc():
     det_list = list(snr_vals_dic.keys())
 
     psd_dic = {key: psd for key in det_list for psd in psd_paths}
-    psds = {key:from_txt(psd_dic[key], length=flen, delta_f=df, low_freq_cutoff=flow[key]) for key in psd_dic}
+    psds = {key:from_txt(psd_dic[key], length=flen, delta_f=df, low_freq_cutoff=flow) for key in psd_dic}
 
     net_snr_shape =  len(snr_vals_dic[det_list[0]])
     net_snr = np.zeros(net_snr_shape)
@@ -80,7 +80,7 @@ def bbh_pm_calc():
 
     detections = det_snr[start:end] > 10
 
-    lenn = sum(detections)
+    lenn_det = sum(detections)
 
     data_dic = get_dic(input_path)
     temp_data = {key: value[start:end][detections] for key, value in data_dic.items()}
@@ -90,11 +90,13 @@ def bbh_pm_calc():
     pol = data_dic['polarization']
 
     hf = h5py.File(out_path, 'w')
-    for det in det_list:
+    for det_str in det_list:
+        det = Detector(det_str)
         snr_l = []
-        for i in trange(start, end):
-            param = {**temp_data[i], **parameters2}
-            hp, hc = get_td_waveform(**param[i])
+        for i in trange(lenn_det):
+            temp_param = {key: temp_data[key][i] for key in temp_data.keys()}
+            param = {**temp_param, **parameters2}
+            hp, hc = get_td_waveform(**param)
             _, loc_hp = hp.abs_max_loc()
             _, loc_hc = hc.abs_max_loc()
             hp_pm = hp[loc_hp:]
@@ -102,13 +104,12 @@ def bbh_pm_calc():
             lenn = max(len(hp_pm), len(hc_pm))
             hp_pm.resize(lenn)
             hc_pm.resize(lenn)
-            hp_pm.to_frequencyseries(delta_f=df)
-            hc_pm.to_frequencyseries(delta_f=df)
+            hp_pm = hp_pm.to_frequencyseries(delta_f=df)
+            hc_pm = hc_pm.to_frequencyseries(delta_f=df)
             fp, fc = det.antenna_pattern(ra[i], dec[i], pol[i], time)
-
             proj_strain = hp_pm * fp + hc_pm * fc
-            snr = sigma(proj_strain, psd=psds[det], low_frequency_cutoff=1000,
+            snr = sigma(proj_strain, psd=psds[det_str], low_frequency_cutoff=1000,
                             high_frequency_cutoff=4800)
             snr_l.append(snr)
-        hf.create_dataset(str(det), data=snr_l)
+        hf.create_dataset(str(det_str), data=snr_l)
     hf.close()
