@@ -112,4 +112,5 @@ def bbh_pm_calc():
                             high_frequency_cutoff=4800)
             snr_l.append(snr)
         hf.create_dataset(str(det_str), data=snr_l)
+    hf.create_dataset('detections', data=detections)
     hf.close()
