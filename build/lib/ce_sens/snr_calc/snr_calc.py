@@ -1,7 +1,7 @@
 import h5py
 import argparse
 from tqdm import tqdm
-from ce_sens.early_warning.early_warning import merger_time
+from ce_sens.early_warning.early_warning import merger_time, early_warning
 from ce_sens.utils import get_dic
 from ce_sens.snr_calc.snr import read_psds, opt_df_static, opt_df_dynamic, calculate_snr
 
@@ -10,13 +10,13 @@ def snr_calc():
     parser.add_argument("path", type=str, help="path to parameters")
     parser.add_argument("start", type=int, help="start of the parameter index")
     parser.add_argument("end", type=int, help="end of the parameter index")
-    parser.add_argument("det", help="detector names")
+    parser.add_argument("det", type=str, help="detector names")
     parser.add_argument("low_freq_cutoff", type=float, help="low_freq_cutoff")
     parser.add_argument("df_max", type=float, help="maximum delta_f")
-    parser.add_argument("approximant", help="approximant to used in the simulation")
-    parser.add_argument("psd_path", help="paths of the psd")
-    parser.add_argument("out_path", help="Output path")
-    parser.add_argument("dynamic_psd_path", nargs='?', help="paths of the second psd")
+    parser.add_argument("approximant", type=str, help="approximant to used in the simulation")
+    parser.add_argument("psd_path", type=str, help="paths of the psd")
+    parser.add_argument("out_path", type=str, help="Output path")
+    parser.add_argument("dynamic_psd_path", type=str, nargs='?', help="paths of the second psd")
     parser.add_argument("lag",  type=float, nargs='?', help="time that switch ends before intersection")
     parser.add_argument("switch_duration", type=float, nargs='?', help="Time required for switch to occur")
 
@@ -56,8 +56,11 @@ def snr_calc():
             temp_data = {key: value[i] for key, value in data_dic.items()}
             param = {**temp_data, **parameters2}
             mer_t = merger_time(param)
-            if mer_t > 0:
+            time = mer_t + switch_duration + lag
+            ew_snr, sf, ef = early_warning(time, param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
+            if (mer_t > 0) and (ew_snr > 10):
                 try:
+                    print('here')
                     snr, sf, ef = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
                 except:
                     snr = 0

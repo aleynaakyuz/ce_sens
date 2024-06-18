@@ -109,7 +109,7 @@ def bbh_pm_calc():
             fp, fc = det.antenna_pattern(ra[i], dec[i], pol[i], time)
             proj_strain = hp_pm * fp + hc_pm * fc
             snr = sigma(proj_strain, psd=psds[det_str], low_frequency_cutoff=1000,
-                            high_frequency_cutoff=4800)
+                            high_frequency_cutoff=4800) ## fix the freqs. Put peak freq as low freq.
             snr_l.append(snr)
         hf.create_dataset(str(det_str), data=snr_l)
     hf.create_dataset('detections', data=detections)

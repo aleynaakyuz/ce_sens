@@ -40,21 +40,17 @@ def stitching_psds(psd_1, psd_2, lag, switch_duration, param):
     new_psd_fs = FrequencySeries(new_psd, delta_f=df)
     return new_psd_fs, sf, ef
 
-def early_warning(time, param, det, psd_path_1, dynamic_psd, lag=None, switch_duration=None):
+def early_warning(time, param, det, psd_1, dynamic_psd, lag=None, switch_duration=None):
     low_f = param['f_lower']
     df = param['delta_f']
     soln = minimize(find_freq, x0=70, args=(param,time), method='Nelder-Mead')
     x = soln.x
     proj_strain = get_proj_strain(det, param)
     if dynamic_psd:
-        print('here')
-        psd_1 = from_txt(psd_path_1, low_freq_cutoff=low_f, length=int(4000/df), delta_f=df)
-        psd_2 = from_txt(dynamic_psd, low_freq_cutoff=low_f, length=int(4000/df), delta_f=df)
-        psd, sf, ef = stitching_psds(psd_1, psd_2, lag, switch_duration, param)
+        psd, sf, ef = stitching_psds(psd_1[df], dynamic_psd[df], lag, switch_duration, param)
         snr = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_f, high_frequency_cutoff=max(x, 5.5))
         return snr, sf, ef
     else:
-        #print('here')
         psd = from_txt(psd_path_1, low_freq_cutoff=low_f, length=int(4000/df), delta_f=df)
         snr = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_f, high_frequency_cutoff=max(x, 5.5))
         return snr
