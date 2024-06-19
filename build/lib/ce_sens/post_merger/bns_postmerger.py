@@ -16,7 +16,7 @@ df = 1.0 / slen
 dt = 1.0 / srate
 
 def get_temp():
-    f = h5py.File('/home/aakyuz/runs3/pm/data.h5', 'r')
+    f = h5py.File('/Users/aleyna/ce-plots/pm/data.h5', 'r')
     d = f['rh_22/Rh_l2_m2_r01000.txt'][:]
     t = d[:,0] * lal.MTSUN_SI * 2.7
     dx = t[1] - t[0]
@@ -74,7 +74,7 @@ def align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, lenn):
         hc_lst[inx] *= s_lst[inx] / n
     return hp_lst, hc_lst
 
-def to_freq(hp_lst, hc_lst, lenn):
+def to_freq(hp_lst, hc_lst, lenn, z):
     php_l = []
     phc_l = []
     for inx in trange(lenn):
@@ -84,8 +84,8 @@ def to_freq(hp_lst, hc_lst, lenn):
         php = hp_cp.time_slice(-.0001, 0.01)
         phc = hc_cp.time_slice(-.0001, 0.01)
 
-        php = php.to_frequencyseries(delta_f=df)
-        phc = phc.to_frequencyseries(delta_f=df) # put some df to includes redshift.
+        php = php.to_frequencyseries(delta_f=df / z[inx])
+        phc = phc.to_frequencyseries(delta_f=df / z[inx]) # put some df to includes redshift.
         php_l.append(php)
         phc_l.append(phc)
     return php_l, phc_l

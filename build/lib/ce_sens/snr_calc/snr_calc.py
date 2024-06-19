@@ -60,7 +60,6 @@ def snr_calc():
             ew_snr, sf, ef = early_warning(time, param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
             if (mer_t > 0) and (ew_snr > 10):
                 try:
-                    print('here')
                     snr, sf, ef = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
                 except:
                     snr = 0

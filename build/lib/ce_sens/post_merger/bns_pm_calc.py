@@ -88,7 +88,10 @@ def bns_pm_calc():
 
     s_lst, i_lst, hp_lst, hc_lst, hr_lst, snr_l = match_data(hp, hc, hr_l, mlen_l, lenn)
     hp_lst, hc_lst = align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, lenn)
-    php_l, phc_l = to_freq(hp_lst, hc_lst, lenn)
+
+    z = data_dic['redshift'][:][start:end]
+
+    php_l, phc_l = to_freq(hp_lst, hc_lst, lenn, z)
 
     snrs = pm_snr(psds, temp_data, php_l, phc_l, lenn)
 
