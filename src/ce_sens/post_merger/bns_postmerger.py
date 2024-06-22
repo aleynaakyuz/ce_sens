@@ -84,8 +84,8 @@ def to_freq(hp_lst, hc_lst, lenn, z):
         php = hp_cp.time_slice(-.0001, 0.01)
         phc = hc_cp.time_slice(-.0001, 0.01)
 
-        php = php.to_frequencyseries(delta_f=df / z[inx])
-        phc = phc.to_frequencyseries(delta_f=df / z[inx]) # multiply with (1+z)
+        php = php.to_frequencyseries(delta_f=df * (1 + z[inx]))
+        phc = phc.to_frequencyseries(delta_f=df * (1 + z[inx]))
         php_l.append(php)
         phc_l.append(phc)
     return php_l, phc_l

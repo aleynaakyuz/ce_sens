@@ -106,12 +106,9 @@ def bbh_pm_calc():
             hc_pm.resize(lenn)
             hp_pm = hp_pm.to_frequencyseries(delta_f=df)
             hc_pm = hc_pm.to_frequencyseries(delta_f=df)
-            sf_hp = max(hp_pm.get_sample_frequencies())
-            sf_hc = max(hc_pm.get_sample_frequencies())
-            freq_cutoff = min(sf_hc, sf_hp)
             fp, fc = det.antenna_pattern(ra[i], dec[i], pol[i], time)
             proj_strain = hp_pm * fp + hc_pm * fc
-            snr = sigma(proj_strain, psd=psds[det_str], low_frequency_cutoff=freq_cutoff)
+            snr = sigma(proj_strain, psd=psds[det_str], low_frequency_cutoff=5.2)
             snr_l.append(snr)
         hf.create_dataset(str(det_str), data=snr_l)
     hf.create_dataset('detections', data=detections)
