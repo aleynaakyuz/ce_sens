@@ -50,6 +50,7 @@ def snr_calc():
         snr_list = []
         sf_list = []
         ef_list = []
+        ew_list = []
         psd_dic = read_psds(psd_path, df_max, low_freq)
         dynamic_psd_dic = read_psds(dynamic_psd, df_max, low_freq)
         for i in tqdm(range(start, end)):
@@ -58,6 +59,7 @@ def snr_calc():
             mer_t = merger_time(param)
             time = mer_t + switch_duration + lag
             ew_snr, sf, ef = early_warning(time, param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
+            ew_list.append(ew_snr)
             if (mer_t > 0) and (ew_snr > 10):
                 try:
                     snr, sf, ef = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
@@ -80,6 +82,7 @@ def snr_calc():
 
         hf.create_dataset('start_freq', data=sf_list)
         hf.create_dataset('end_freq', data=ef_list)
+        hf.create_dataset('early_warning', data=ew_list)
     else:
         snr_list = []
         psd = read_psds(psd_path, df_max, low_freq)

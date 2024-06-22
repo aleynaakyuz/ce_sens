@@ -85,7 +85,7 @@ def to_freq(hp_lst, hc_lst, lenn, z):
         phc = hc_cp.time_slice(-.0001, 0.01)
 
         php = php.to_frequencyseries(delta_f=df / z[inx])
-        phc = phc.to_frequencyseries(delta_f=df / z[inx]) # put some df to includes redshift.
+        phc = phc.to_frequencyseries(delta_f=df / z[inx]) # multiply with (1+z)
         php_l.append(php)
         phc_l.append(phc)
     return php_l, phc_l
