@@ -1,7 +1,6 @@
 import numpy as np
 import argparse
 import h5py
-from pycbc.psd.read import from_txt
 from ce_sens.utils import get_dic
 from ce_sens.post_merger.bns_postmerger import get_temp, create_td_data, match_data, align_normalize, to_freq, pm_snr
 
@@ -45,7 +44,6 @@ def bns_pm_calc():
     dt = 1.0 / srate
 
     hp, hc = get_temp()
-    flow = {'CE40': 5.2, 'CE40_LF':5.2, 'CE20': 5.2, 'CE20_PM':5.2, 'E1':1, 'I1': 3}
 
     snr_path_lst = [snr_path_1, snr_path_2, snr_path_3]
     snr_paths = [x for x in snr_path_lst if x is not None]
@@ -62,7 +60,7 @@ def bns_pm_calc():
     det_list = list(snr_vals_dic.keys())
 
     psd_dic = {key: psd for key in det_list for psd in psd_paths}
-    psds = {key:from_txt(psd_dic[key], length=flen, delta_f=df, low_freq_cutoff=flow[key]) for key in psd_dic}
+    #psds = {key:from_txt(psd_dic[key], length=flen, delta_f=df, low_freq_cutoff=flow[key]) for key in psd_dic}
     
     net_snr_shape =  len(snr_vals_dic[det_list[0]])
     net_snr = np.zeros(net_snr_shape)
@@ -94,7 +92,7 @@ def bns_pm_calc():
 
     php_l, phc_l = to_freq(hp_lst, hc_lst, lenn, z)
 
-    snrs = pm_snr(psds, temp_data, php_l, phc_l, lenn)
+    snrs = pm_snr(psd_dic, temp_data, php_l, phc_l, lenn, z)
 
     hf = h5py.File(out_path, 'w')
     for k in snrs:
