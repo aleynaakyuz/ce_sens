@@ -16,8 +16,9 @@ def bns_pm_calc():
     parser.add_argument("psd_path_1", help="Path to psd(s). Gave them as lists. If there is two psds to be sticted gave them in the same list")
     parser.add_argument("psd_path_2", help="Path to psd(s). Gave them as lists. If there is two psds to be sticted gave them in the same list")
     parser.add_argument("psd_path_3", nargs='?', help="Path to psd(s). Gave them as lists. If there is two psds to be sticted gave them in the same list")
-    parser.add_argument("dynamic_psd", nargs='?', help="First detector that has snr calculation")
     parser.add_argument("snr_path_3", nargs='?', help="First detector that has snr calculation")
+    parser.add_argument("dynamic_psd", nargs='?', help="First detector that has snr calculation")
+
 
     args = parser.parse_args()
 
@@ -44,7 +45,7 @@ def bns_pm_calc():
     dt = 1.0 / srate
 
     hp, hc = get_temp()
-    flow = {'J1': 5.2, 'J2':5.2, 'E1':1, 'I1': 3}
+    flow = {'CE40': 5.2, 'CE40_LF':5.2, 'CE20': 5.2, 'CE20_PM':5.2, 'E1':1, 'I1': 3}
 
     snr_path_lst = [snr_path_1, snr_path_2, snr_path_3]
     snr_paths = [x for x in snr_path_lst if x is not None]
