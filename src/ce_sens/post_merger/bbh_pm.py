@@ -51,7 +51,7 @@ def bbh_pm_calc():
     parameters2 = {
     "approximant": "IMRPhenomXPHM",
     "delta_t": dt,
-    "f_lower": 100,
+    "f_lower": 50,
     "phase_order": -1
     }
 
