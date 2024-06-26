@@ -16,7 +16,7 @@ df = 1.0 / slen
 dt = 1.0 / srate
 
 def get_temp():
-    f = h5py.File('/Users/aleyna/ce-plots/pm/data.h5', 'r')
+    f = h5py.File('/home/aakyuz/runs5/pm/data.h5', 'r')
     d = f['rh_22/Rh_l2_m2_r01000.txt'][:]
     t = d[:,0] * lal.MTSUN_SI * 2.7
     dx = t[1] - t[0]
