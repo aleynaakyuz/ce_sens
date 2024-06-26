@@ -98,5 +98,6 @@ def bns_pm_calc():
     for k in snrs:
         snrs[k] = np.array(snrs[k])
         hf.create_dataset(str(k), data=snrs[k])
+    hf.create_dataset('detections', data=detections)
     hf.close()
 
