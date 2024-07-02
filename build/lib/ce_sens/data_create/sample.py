@@ -5,6 +5,7 @@ import pycbc.workflow.configuration as wfc
 from pycbc.distributions.utils import prior_from_config
 from pycbc.population.population_models import distance_from_rate, merger_rate_density, coalescence_rate, sfr_madau_dickinson_2014, total_rate_upto_redshift
 
+nps = 10000
 
 def normalization_const(rho, time):
     d = 0.0001
@@ -12,16 +13,16 @@ def normalization_const(rho, time):
     V = (4/3)*np.pi*d**3
     loc_events = rho*time*V
     merger_rate_dens = merger_rate_density(sfr_madau_dickinson_2014, 'inverse', 
-                                           rho_local=rho, maxz=z, npoints=1000)
-    coa_rate = coalescence_rate(merger_rate_dens, maxz=z, npoints=1000)
+                                           rho_local=rho, maxz=z, npoints=nps)
+    coa_rate = coalescence_rate(merger_rate_dens, maxz=z, npoints=nps)
     tot_rate = total_rate_upto_redshift(z, coa_rate)
     c = loc_events / tot_rate 
     return c
 
 def number_of_samples(rho, c, z_max):
     merger_rate_dens = merger_rate_density(sfr_madau_dickinson_2014, 'inverse', 
-                                           rho_local=rho, maxz=z_max, npoints=1000)
-    coa_rate = coalescence_rate(merger_rate_dens, maxz=z_max, npoints=1000)
+                                           rho_local=rho, maxz=z_max, npoints=nps)
+    coa_rate = coalescence_rate(merger_rate_dens, maxz=z_max, npoints=nps)
     tot_rate = total_rate_upto_redshift(z_max, coa_rate)
     number = tot_rate * c
     return int(number)
@@ -29,7 +30,7 @@ def number_of_samples(rho, c, z_max):
 def other_params(samples, tot_rate, coa_rate, z_max, type):
     params = {}
     
-    dist = distance_from_rate(tot_rate, coa_rate, maxz=z_max, npoints=1000)
+    dist = distance_from_rate(tot_rate, coa_rate, maxz=z_max, npoints=nps)
     params.update({'distance':dist})
     z = redshift(dist)
     params.update({'redshift':z})
@@ -60,12 +61,12 @@ def make_hdf5(samples, output_path, params):
 def create_data(inp_path, out_path, rho, time, z_max, type):
     c = normalization_const(rho, time)
     num = number_of_samples(rho, c, z_max)
-    
+    print('number of parameters:', num)
     cp = wfc.WorkflowConfigParser(inp_path)
     joint_dist = prior_from_config(cp, prior_section='prior')
     merger_rate_dens = merger_rate_density(sfr_madau_dickinson_2014, 'inverse', 
-                                           rho_local=rho, maxz=z_max, npoints=1000)
-    coa_rate = coalescence_rate(merger_rate_dens, maxz=z_max, npoints=1000)
+                                           rho_local=rho, maxz=z_max, npoints=nps)
+    coa_rate = coalescence_rate(merger_rate_dens, maxz=z_max, npoints=nps)
 
     
     samples = joint_dist.rvs(num)

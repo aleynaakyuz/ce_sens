@@ -44,14 +44,14 @@ def bbh_pm_calc():
     srate = 10000
     tlen = slen * srate
     flen = tlen // 2 + 1
-    df = 1.0 / (10*slen)
+    df = 1.0 / slen
     dt = 1.0 / srate
     flow = 5.2
 
     parameters2 = {
     "approximant": "IMRPhenomXPHM",
     "delta_t": dt,
-    "f_lower": 100,
+    "f_lower": 50,
     "phase_order": -1
     }
 
@@ -106,12 +106,9 @@ def bbh_pm_calc():
             hc_pm.resize(lenn)
             hp_pm = hp_pm.to_frequencyseries(delta_f=df)
             hc_pm = hc_pm.to_frequencyseries(delta_f=df)
-            sf_hp = max(hp_pm.get_sample_frequencies())
-            sf_hc = max(hc_pm.get_sample_frequencies())
-            freq_cutoff = min(sf_hc, sf_hp)
             fp, fc = det.antenna_pattern(ra[i], dec[i], pol[i], time)
             proj_strain = hp_pm * fp + hc_pm * fc
-            snr = sigma(proj_strain, psd=psds[det_str], low_frequency_cutoff=freq_cutoff)
+            snr = sigma(proj_strain, psd=psds[det_str], low_frequency_cutoff=5.2)
             snr_l.append(snr)
         hf.create_dataset(str(det_str), data=snr_l)
     hf.create_dataset('detections', data=detections)

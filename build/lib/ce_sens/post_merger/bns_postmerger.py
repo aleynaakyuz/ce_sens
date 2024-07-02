@@ -14,9 +14,10 @@ tlen = slen * srate
 flen = tlen // 2 + 1
 df = 1.0 / slen
 dt = 1.0 / srate
+flow = {'CE40': 5.2, 'CE40_LF':5.2, 'CE20': 5.2, 'CE20_PM':5.2, 'E1':1, 'I1': 3}
 
 def get_temp():
-    f = h5py.File('/Users/aleyna/ce-plots/pm/data.h5', 'r')
+    f = h5py.File('/home/aakyuz/runs5/pm/data.h5', 'r')
     d = f['rh_22/Rh_l2_m2_r01000.txt'][:]
     t = d[:,0] * lal.MTSUN_SI * 2.7
     dx = t[1] - t[0]
@@ -84,27 +85,28 @@ def to_freq(hp_lst, hc_lst, lenn, z):
         php = hp_cp.time_slice(-.0001, 0.01)
         phc = hc_cp.time_slice(-.0001, 0.01)
 
-        php = php.to_frequencyseries(delta_f=df / z[inx])
-        phc = phc.to_frequencyseries(delta_f=df / z[inx])
+        php = php.to_frequencyseries(delta_f=df * (1 + z[inx]))
+        phc = phc.to_frequencyseries(delta_f=df * (1 + z[inx]))
         php_l.append(php)
         phc_l.append(phc)
     return php_l, phc_l
 
-def pm_snr(psds, temp_data, php_l, phc_l, lenn):
+def pm_snr(psd_dic, temp_data, php_l, phc_l, lenn, z):
     time = 1697205750
-    det = {k: Detector(k) for k in psds.keys()}
-    snrs = {k: [] for k in psds.keys()}
+    det = {k: Detector(k) for k in psd_dic.keys()}
+    snrs = {k: [] for k in psd_dic.keys()}
     for i in trange(lenn):   
         ant = {}
-        for ifo in psds.keys():
+        for ifo in psd_dic.keys():
             fp, fc = det[ifo].antenna_pattern(temp_data['ra'][i], temp_data['dec'][i],
                                     temp_data['polarization'][i], time)
             ant[ifo] = fp, fc
             
-        for ifo in psds.keys():
+        for ifo in psd_dic.keys():
             fp, fc = ant[ifo]
             pm = fp * php_l[i] + fc * phc_l[i]
-            snr = sigma(pm, psd=psds[ifo], low_frequency_cutoff=1000,
+            psd = from_txt(psd_dic[ifo], length=flen, delta_f=(df* (1 + z[i])), low_freq_cutoff=flow[ifo])
+            snr = sigma(pm, psd=psd, low_frequency_cutoff=1000,
                         high_frequency_cutoff=4800)
             snrs[ifo].append(snr)
     return snrs
