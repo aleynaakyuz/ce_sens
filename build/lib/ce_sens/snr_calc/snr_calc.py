@@ -3,7 +3,8 @@ import argparse
 from tqdm import tqdm
 from ce_sens.early_warning.early_warning import merger_time, early_warning
 from ce_sens.utils import get_dic
-from ce_sens.snr_calc.snr import read_psds, opt_df_static, opt_df_dynamic, calculate_snr
+from ce_sens.snr_calc.snr import read_psds, calc_diff
+from ce_sens.snr_calc.optimal_df import opt_df_static, opt_df_dynamic
 
 def snr_calc():
     parser = argparse.ArgumentParser()
@@ -51,6 +52,8 @@ def snr_calc():
         sf_list = []
         ef_list = []
         ew_list = []
+        partial_lst = []
+        gain_lst = []
         psd_dic = read_psds(psd_path, df_max, low_freq)
         dynamic_psd_dic = read_psds(dynamic_psd, df_max, low_freq)
         for i in tqdm(range(start, end)):
@@ -60,39 +63,37 @@ def snr_calc():
             if mer_t > 0:
                 time = mer_t + switch_duration + lag
                 ew_snr, sf, ef = early_warning(time, param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
-                ew_list.append(ew_snr)
-                if (mer_t > 0) and (ew_snr > 10):
-                    try:
-                        snr, sf, ef = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
-                    except:
-                        snr = 0
-                        sf = 0
-                        ef = 0
+                if ew_snr > 10:
+                    snr, sf, ef, new_psd = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration, save_psd=True)
+                    df = param['delta_f']
+                    partial_loss = calc_diff(param, det, new_psd, psd_dic[df], ef, 312)
+                    gain = calc_diff(param, det, new_psd, psd_dic[df], 312)
                 else:
-                    try:
-                        snr = opt_df_static(param, det, psd_dic)
-                        sf = 0
-                        ef = 0
-                    except:
-                        snr = 0
-                        sf = 0
-                        ef = 0
-            else:
-                try:
                     snr = opt_df_static(param, det, psd_dic)
                     sf = 0
                     ef = 0
-                except:
-                    snr = 0
-                    sf = 0
-                    ef = 0
+                    partial_loss = 0
+                    gain = 0
+            else:
+                snr = opt_df_static(param, det, psd_dic)
+                sf = 0
+                ef = 0
+                ew_snr = 0
+                partial_loss = 0
+                gain = 0
+            
+            ew_list.append(ew_snr)
             snr_list.append(snr)
             sf_list.append(sf)
             ef_list.append(ef)
+            gain_lst.append(gain)
+            partial_lst.append(partial_loss)
 
         hf.create_dataset('start_freq', data=sf_list)
         hf.create_dataset('end_freq', data=ef_list)
         hf.create_dataset('early_warning', data=ew_list)
+        hf.create_dataset('gain', data=gain_lst)
+        hf.create_dataset('partial_gain', data=partial_lst)
     else:
         snr_list = []
         psd = read_psds(psd_path, df_max, low_freq)

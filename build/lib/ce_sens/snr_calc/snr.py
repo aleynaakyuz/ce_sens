@@ -1,9 +1,6 @@
 import numpy as np
 from pycbc.psd.read import from_txt
-from pycbc.psd.read import from_txt
-from pycbc.filter import sigma
-from ce_sens.utils import get_proj_strain
-from ce_sens.early_warning.early_warning import stitching_psds
+from ce_sens.utils import calculate_snr
 
 df_min = 0.0001
 f_max = 4000
@@ -22,11 +19,11 @@ def read_psds(psd_path, df_max, low_freq):
                         length=lenn, delta_f=i)
         psds.update({i: psd})
     return psds
-
-def calculate_snr(det, psd, param, low_freq, high_freq=None):
-    proj_strain = get_proj_strain(det, param)
-    amp = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
-    return amp  
+    
+def calc_diff(param, det, psd1, psd2, sf, ef=None):
+    snr_f = calculate_snr(det, psd1, param, sf, high_freq=ef)
+    snr_i = calculate_snr(det, psd2, param, sf, high_freq=ef)
+    return snr_f - snr_i
 
 def opt_df_static(final_data, det, psd):
     df = final_data['delta_f']
@@ -43,31 +40,3 @@ def opt_df_static(final_data, det, psd):
             continue
     return snr_l
 
-def opt_df_dynamic(param, det, psd, dynamic_psd, lag, switch_duration):
-    df = param['delta_f']
-    low_freq = param['f_lower']
-    new_psd, sf, ef = stitching_psds(psd[df], dynamic_psd[df], lag, switch_duration, param)
-    snr_l = calculate_snr(det, psd[df], param, low_freq, sf)
-    start_freq = 0
-    end_freq = 0
-    if snr_l > 10:
-        snr_l = calculate_snr(det, new_psd, param, low_freq)
-        start_freq = sf
-        end_freq = ef 
-    while df > df_min:
-        df = df/2
-        param.update({"delta_f": df})
-        new_psd, sf, ef = stitching_psds(psd[df], dynamic_psd[df], lag, switch_duration, param)
-        snr_s = calculate_snr(det, psd[df], param, low_freq, sf)
-        start_freq = 0
-        end_freq = 0
-        if snr_s > 10:
-            snr_s = calculate_snr(det, new_psd, param, low_freq)
-            start_freq = sf
-            end_freq = ef
-        if abs(snr_l - snr_s) / snr_l < 0.01:
-            break
-        else:
-            snr_l = snr_s
-            continue
-    return snr_l, start_freq, end_freq

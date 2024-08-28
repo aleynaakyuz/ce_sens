@@ -1,10 +1,11 @@
 import numpy as np
 from pycbc.waveform.spa_tmplt import spa_length_in_time
 from pycbc.types.frequencyseries import FrequencySeries
-from pycbc.filter import sigma
 from scipy.optimize import minimize
-from pycbc.psd.read import from_txt
-from ce_sens.utils import get_proj_strain
+from ce_sens.utils import calculate_snr
+
+df_min = 0.0001
+f_max = 4000
 
 def find_freq(f_lower, data, target):
     temp_data = data.copy()
@@ -23,6 +24,32 @@ def merger_time(param):
     mer_t = spa_length_in_time(**temp_param)
     return mer_t
 
+def early_warning(time, param, det, psd_1, dynamic_psd, lag=None, switch_duration=None):
+    soln = minimize(find_freq, x0=70, args=(param,time), method='Nelder-Mead')
+    x = soln.x
+    snr, sf, ef = opt_df_dynamic(param, det, psd_1, dynamic_psd, lag, switch_duration, high_freq=max(x, 5.5))
+    return snr, sf, ef
+
+def opt_df_dynamic(param, det, psd, dynamic_psd, lag, switch_duration, high_freq=None, save_psd=False):
+    df = param['delta_f']
+    low_freq = param['f_lower']
+    new_psd, sf, ef = stitching_psds(psd[df], dynamic_psd[df], lag, switch_duration, param)
+    snr_l = calculate_snr(det, new_psd, param, low_freq, high_freq)
+    while df > df_min:
+        df = df/2
+        param.update({"delta_f": df})
+        new_psd, sf, ef = stitching_psds(psd[df], dynamic_psd[df], lag, switch_duration, param)
+        snr_s = calculate_snr(det, new_psd, param, low_freq, high_freq)
+        if abs(snr_l - snr_s) / snr_l < 0.01:
+            break
+        else:
+            snr_l = snr_s
+            continue
+    if save_psd:
+        return snr_l, sf, ef, new_psd
+    else:
+        return snr_l, sf, ef
+    
 def stitching_psds(psd_1, psd_2, lag, switch_duration, param):
     df = param['delta_f']
     merger_time_after_intersection = merger_time(param)
@@ -30,27 +57,12 @@ def stitching_psds(psd_1, psd_2, lag, switch_duration, param):
     start_time = merger_time_after_intersection + switch_duration + lag 
     sf = calculate_freqs(start_time, param)
     ef = calculate_freqs(end_time, param)
-    end_inx = round(ef) * 10
-    start_inx = round(sf) * 10
+    end_inx = round(ef * (1/df))
+    start_inx = round(sf * (1/df))
     first_arr = psd_1.data[:start_inx]
     second_arr = psd_2.data[end_inx:]
     margin = abs(end_inx - start_inx)
-    gap = np.ones(margin)  #* 10**(-47)
+    gap = np.ones(margin) #* 10**(-47)
     new_psd = np.concatenate((first_arr, gap, second_arr))
     new_psd_fs = FrequencySeries(new_psd, delta_f=df)
     return new_psd_fs, sf, ef
-
-def early_warning(time, param, det, psd_1, dynamic_psd, lag=None, switch_duration=None):
-    low_f = param['f_lower']
-    df = param['delta_f']
-    soln = minimize(find_freq, x0=70, args=(param,time), method='Nelder-Mead')
-    x = soln.x
-    proj_strain = get_proj_strain(det, param)
-    if dynamic_psd:
-        psd, sf, ef = stitching_psds(psd_1[df], dynamic_psd[df], lag, switch_duration, param)
-        snr = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_f, high_frequency_cutoff=max(x, 5.5))
-        return snr, sf, ef
-    else:
-        psd = from_txt(psd_path_1, low_freq_cutoff=low_f, length=int(4000/df), delta_f=df)
-        snr = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_f, high_frequency_cutoff=max(x, 5.5))
-        return snr
