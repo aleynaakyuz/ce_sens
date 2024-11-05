@@ -107,6 +107,6 @@ def bbh_pm_calc():
             proj_strain = hp_pm * fp + hc_pm * fc
             psd = from_txt(psd_path, length=flen, delta_f= df * (1 + param['redshift'][:]), low_freq_cutoff=flow)
             snr = sigma(proj_strain, psd=psd, low_frequency_cutoff=flow)
-            snr_l.append(snr)
+        snr_l.append(snr)
     hf.create_dataset('snrs', data=snr_l)
     hf.close()
