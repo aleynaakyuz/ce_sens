@@ -24,7 +24,7 @@ def snr_calc():
 
     args = parser.parse_args()
     input_path = args.path
-    start = args.start 
+    start = args.start
     end = args.end
     det = args.det
     low_freq = args.low_freq_cutoff
@@ -64,24 +64,45 @@ def snr_calc():
                 time = mer_t + switch_duration + lag
                 ew_snr, sf, ef = early_warning(time, param, det, psd_dic, dynamic_psd_dic, lag, switch_duration)
                 if ew_snr > 10:
-                    snr, sf, ef, new_psd = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration, save_psd=True)
-                    df = param['delta_f']
-                    partial_loss = calc_diff(param, det, new_psd, psd_dic[df], ef, 312)
-                    gain = calc_diff(param, det, new_psd, psd_dic[df], 312)
+                    try:
+                        snr, sf, ef, new_psd = opt_df_dynamic(param, det, psd_dic, dynamic_psd_dic, lag, switch_duration, save_psd=True)
+                        df = param['delta_f']
+                        partial_loss = calc_diff(param, det, new_psd, psd_dic[df], ef, 312)
+                        gain = calc_diff(param, det, new_psd, psd_dic[df], 312)
+                    except:
+                        snr = 0
+                        sf = 0
+                        ef = 0
+                        partial_loss = 0
+                        gain = 0
                 else:
+                    try:
+                        snr = opt_df_static(param, det, psd_dic)
+                        sf = 0
+                        ef = 0
+                        partial_loss = 0
+                        gain = 0
+                    except:
+                        snr = 0
+                        sf = 0
+                        ef = 0
+                        partial_loss = 0
+                        gain = 0
+            else:
+                try:
                     snr = opt_df_static(param, det, psd_dic)
+                    sf = 0
+                    ef = 0
+                    ew_snr = 0
+                    partial_loss = 0
+                    gain = 0
+                except:
+                    snr = 0
                     sf = 0
                     ef = 0
                     partial_loss = 0
                     gain = 0
-            else:
-                snr = opt_df_static(param, det, psd_dic)
-                sf = 0
-                ef = 0
-                ew_snr = 0
-                partial_loss = 0
-                gain = 0
-            
+
             ew_list.append(ew_snr)
             snr_list.append(snr)
             sf_list.append(sf)

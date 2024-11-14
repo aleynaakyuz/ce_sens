@@ -27,86 +27,51 @@ def get_temp():
     hc = hc.time_slice(-1, hc.end_time)
     return hp, hc
 
-def create_td_data(temp_data, param2, hp, lenn):
-    hr_l = []
-    mlen_l = []
-    for i in trange(lenn):
-        temp_param = {key: temp_data[key][i] for key in temp_data.keys()}
-        param = {**temp_param, **param2}
-        hr, _ = get_td_waveform(**param)
-        mlen = max(len(hp), len(hr))
-        hr_l.append(hr)
-        mlen_l.append(mlen)
-    return hr_l, mlen_l
+def create_td_data(param, hp):
+    hr, _ = get_td_waveform(**param)
+    mlen = max(len(hp), len(hr))
+    return hr, mlen
 
-def match_data(hp, hc, hr_l, mlen_l, lenn):
-    s_lst = []
-    i_lst = []
-    hp_lst = []
-    hc_lst = []
-    hr_lst = []
-    snr_l = []
-    for inx in trange(lenn):
-        hp_cp = hp.copy()
-        hc_cp = hc.copy()
-        
-        hr_l[inx].resize(mlen_l[inx])
-        hp_cp.resize(mlen_l[inx])
-        hc_cp.resize(mlen_l[inx])
-        
-        hr_lst.append(hr_l[inx])
-        hc_lst.append(hc_cp)
-        hp_lst.append(hp_cp)
-        
-        snr = matched_filter(hp_cp, hr_l[inx], low_frequency_cutoff=300, high_frequency_cutoff=700)
-        s, i = snr.abs_max_loc()
-        s_lst.append(s)
-        i_lst.append(i)
-        snr_l.append(snr)
-    return s_lst, i_lst, hp_lst, hc_lst, hr_lst, snr_l
+def match_data(hp, hc, hr_l, mlen_l):
+    hp_cp = hp.copy()
+    hc_cp = hc.copy()
 
-def align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l, lenn):
-    for inx in trange(lenn):
-        n = sigma(hp_lst[inx], low_frequency_cutoff=300, high_frequency_cutoff=700)
-        sdif = hp_lst[inx].start_time - hr_lst[inx].start_time
-        hp_lst[inx].start_time += i_lst[inx] * snr_l[inx].delta_t  - sdif
-        hc_lst[inx].start_time += i_lst[inx] * snr_l[inx].delta_t  - sdif
-        hp_lst[inx] *= s_lst[inx] / n
-        hc_lst[inx] *= s_lst[inx] / n
+    hr_l.resize(mlen_l)
+    hp_cp.resize(mlen_l)
+    hc_cp.resize(mlen_l)
+
+    snr = matched_filter(hp_cp, hr_l, low_frequency_cutoff=300, high_frequency_cutoff=700)
+    s, i = snr.abs_max_loc()
+    return s, i, hp, hc, hr_l, snr
+
+def align_normalize(hp_lst, hc_lst, hr_lst, s_lst, i_lst, snr_l):
+    n = sigma(hp_lst, low_frequency_cutoff=300, high_frequency_cutoff=700)
+    sdif = hp_lst.start_time - hr_lst.start_time
+    hp_lst.start_time += i_lst * snr_l.delta_t  - sdif
+    hc_lst.start_time += i_lst * snr_l.delta_t  - sdif
+    hp_lst *= s_lst / n
+    hc_lst *= s_lst / n
     return hp_lst, hc_lst
 
-def to_freq(hp_lst, hc_lst, lenn, z):
-    php_l = []
-    phc_l = []
-    for inx in trange(lenn):
-        hp_cp = hp_lst[inx].copy()
-        hc_cp = hc_lst[inx].copy()
+def to_freq(hp_lst, hc_lst, z):
+    hp_cp = hp_lst.copy()
+    hc_cp = hc_lst.copy()
 
-        php = hp_cp.time_slice(-.0001, 0.01)
-        phc = hc_cp.time_slice(-.0001, 0.01)
+    php = hp_cp.time_slice(-.0001, 0.01)
+    phc = hc_cp.time_slice(-.0001, 0.01)
 
-        php = php.to_frequencyseries(delta_f=df * (1 + z[inx]))
-        phc = phc.to_frequencyseries(delta_f=df * (1 + z[inx]))
-        php_l.append(php)
-        phc_l.append(phc)
-    return php_l, phc_l
+    php = php.to_frequencyseries(delta_f=df * (1 + z))
+    phc = phc.to_frequencyseries(delta_f=df * (1 + z))
+    return php, phc
 
-def pm_snr(psd_dic, temp_data, php_l, phc_l, lenn, z):
-    time = 1697205750
-    det = {k: Detector(k) for k in psd_dic.keys()}
-    snrs = {k: [] for k in psd_dic.keys()}
-    for i in trange(lenn):   
-        ant = {}
-        for ifo in psd_dic.keys():
-            fp, fc = det[ifo].antenna_pattern(temp_data['ra'][i], temp_data['dec'][i],
-                                    temp_data['polarization'][i], time)
-            ant[ifo] = fp, fc
-            
-        for ifo in psd_dic.keys():
-            fp, fc = ant[ifo]
-            pm = fp * php_l[i] + fc * phc_l[i]
-            psd = from_txt(psd_dic[ifo], length=flen, delta_f=(df* (1 + z[i])), low_freq_cutoff=flow[ifo])
-            snr = sigma(pm, psd=psd, low_frequency_cutoff=1000,
-                        high_frequency_cutoff=4800)
-            snrs[ifo].append(snr)
-    return snrs
+def post_merger_snr(psd, det, temp_data, php_l, phc_l, z):
+    time = temp_data['tc']
+
+    fp, fc = det.antenna_pattern(temp_data['ra'], temp_data['dec'],
+                            temp_data['polarization'], time)
+
+    pm = fp * php_l + fc * phc_l
+    psd = from_txt(psd, length=flen, delta_f=(df* (1 + z)), low_freq_cutoff=5.2)
+    snr = sigma(pm, psd=psd, low_frequency_cutoff=1000,
+                high_frequency_cutoff=4800)
+    return snr

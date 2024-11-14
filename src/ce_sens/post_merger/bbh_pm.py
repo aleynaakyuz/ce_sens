@@ -7,7 +7,7 @@ import h5py
 import numpy as np
 import argparse
 from tqdm import tqdm
-from ce_sens.utils import get_dic
+from ce_sens.utils import get_dic, calculate_snr
 from ce_sens.snr_calc.optimal_df import opt_df_static
 from ce_sens.snr_calc.snr import read_psds
 
@@ -87,7 +87,7 @@ def bbh_pm_calc():
         try:
             temp_data = {key: value[i] for key, value in data_dic.items()}
             param = {**temp_data, **parameters2}
-            snr = opt_df_static(param, det, psd)
+            snr = calculate_snr(det, psd, param, 5.2)
         except Exception as e:
             print(f"An error occurred: {e}")
             snr = 0

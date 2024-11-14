@@ -16,11 +16,11 @@ def find_freq(f_lower, data, target):
 def calculate_freqs(time, param):
     soln_1 = minimize(find_freq, x0=70, args=(param,time), method='Nelder-Mead')
     freq = soln_1.x[0]
-    return freq 
+    return freq
 
 def merger_time(param):
     temp_param = param.copy()
-    temp_param.update({'f_lower':312})
+    temp_param.update({'f_lower':297.5})
     mer_t = spa_length_in_time(**temp_param)
     return mer_t
 
@@ -49,12 +49,12 @@ def opt_df_dynamic(param, det, psd, dynamic_psd, lag, switch_duration, high_freq
         return snr_l, sf, ef, new_psd
     else:
         return snr_l, sf, ef
-    
+
 def stitching_psds(psd_1, psd_2, lag, switch_duration, param):
     df = param['delta_f']
     merger_time_after_intersection = merger_time(param)
     end_time = merger_time_after_intersection + lag
-    start_time = merger_time_after_intersection + switch_duration + lag 
+    start_time = merger_time_after_intersection + switch_duration + lag
     sf = calculate_freqs(start_time, param)
     ef = calculate_freqs(end_time, param)
     end_inx = round(ef * (1/df))
