@@ -32,20 +32,26 @@ def bbh_pm_calc():
 
     time = 1697205750
     slen = 10
-    srate = 10000
+    srate = 1000
     tlen = slen * srate
     flen = tlen // 2 + 1
     df = 1.0 / slen
     dt = 1.0 / srate
-    flow = 5.1
+    flow = 50
 
     parameters2 = {
     "approximant": "IMRPhenomXPHM",
     "delta_t": dt,
-    "f_lower": 50,
+    "f_lower": flow,
     "phase_order": -1
     }
 
+    parameters3 = {
+    "approximant": "IMRPhenomXPHM",
+    "delta_f": 0.01,
+    "f_lower": 5.2,
+    "phase_order": -1
+    }
     #snr_path_lst = [snr_path_1, snr_path_2, snr_path_3]
     #snr_paths = [x for x in snr_path_lst if x is not None]
 
@@ -81,18 +87,17 @@ def bbh_pm_calc():
     dec = data_dic['dec']
     pol = data_dic['polarization']
 
+    psd = from_txt(psd_path, length=int(4000/0.01), delta_f=0.01, low_freq_cutoff=5.2)
+
     snr_l = []
     hf = h5py.File(out_path, 'w')
     for i in tqdm(range(start, end)):
-        try:
-            temp_data = {key: value[i] for key, value in data_dic.items()}
-            param = {**temp_data, **parameters2}
-            snr = calculate_snr(det, psd, param, 5.2)
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            snr = 0
+        temp_data = {key: value[i] for key, value in data_dic.items()}
+        param = {**temp_data, **parameters3}
+        snr = calculate_snr(args.det, psd, param, 5.2)
 
         if snr > 10:
+            param = {**temp_data, **parameters2}
             hp, hc = get_td_waveform(**param)
             _, loc_hp = hp.abs_max_loc()
             _, loc_hc = hc.abs_max_loc()
@@ -101,12 +106,17 @@ def bbh_pm_calc():
             lenn = max(len(hp_pm), len(hc_pm))
             hp_pm.resize(lenn)
             hc_pm.resize(lenn)
-            hp_pm = hp_pm.to_frequencyseries(delta_f= df * (1 + param['redshift'][:]))
-            hc_pm = hc_pm.to_frequencyseries(delta_f= df * (1 + param['redshift'][:]))
+            df = 1 / lenn
+            hp_pm = hp_pm.to_frequencyseries(delta_f= df * (1 + param['redshift']))
+            hc_pm = hc_pm.to_frequencyseries(delta_f= df * (1 + param['redshift']))
             fp, fc = det.antenna_pattern(ra[i], dec[i], pol[i], time)
             proj_strain = hp_pm * fp + hc_pm * fc
-            psd = from_txt(psd_path, length=flen, delta_f= df * (1 + param['redshift'][:]), low_freq_cutoff=flow)
-            snr = sigma(proj_strain, psd=psd, low_frequency_cutoff=flow)
-        snr_l.append(snr)
+            psd_pm = from_txt(psd_path, length=len(proj_strain), delta_f= df * (1 + param['redshift']), low_freq_cutoff=flow)
+            snr_pm = sigma(proj_strain, psd=psd_pm, low_frequency_cutoff=flow)
+
+        else:
+            snr_pm = 0
+
+        snr_l.append(snr_pm)
     hf.create_dataset('snrs', data=snr_l)
     hf.close()
