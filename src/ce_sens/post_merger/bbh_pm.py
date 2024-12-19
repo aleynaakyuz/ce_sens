@@ -98,7 +98,19 @@ def bbh_pm_calc():
 
         if snr > 10:
             param = {**temp_data, **parameters2}
-            hp, hc = get_td_waveform(**param)
+            try:
+                hp, hc = get_td_waveform(**param)
+            except Exception as e:
+                print(f"Error with sample {i}: {e}. Retrying with updated f_lower...")
+                param['f_lower'] = 40
+                try:
+                    hp, hc = get_td_waveform(**param)
+                except  Exception as e2:
+                    print(f"Retry failed for sample {i}: {e2}. Skipping this sample.")
+                    snr_pm = 0
+                    snr_l.append(snr_pm)
+                    continue
+
             _, loc_hp = hp.abs_max_loc()
             _, loc_hc = hc.abs_max_loc()
             hp_pm = hp[loc_hp:]
