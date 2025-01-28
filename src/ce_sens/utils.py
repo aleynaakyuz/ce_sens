@@ -66,3 +66,25 @@ def calculate_snr(det, psd, param, low_freq, high_freq=None):
     proj_strain = get_proj_strain(det, param)
     amp = sigma(proj_strain, psd=psd, low_frequency_cutoff=low_freq, high_frequency_cutoff=high_freq)
     return amp  
+
+def get_proj(det, param, freq=False):
+    ra = param['ra']
+    dec = param['dec']
+    pol = param['polarization']
+    df = param['delta_f']
+    
+    t_gps=1697205750
+    detec = Detector(det)
+    if freq:
+        freq = hp.sample_frequencies.data
+        cross_l = []
+        plus_l = []
+        for f in freq:
+            f_plus_samp, f_cross_samp = detec.antenna_pattern(ra, dec, pol, t_gps, frequency=f)
+            cross_l.append(f_cross_samp)
+            plus_l.append(f_plus_samp)
+        f_cross = np.array(cross_l)
+        f_plus = np.array(plus_l)
+    else:
+        f_plus, f_cross = detec.antenna_pattern(ra, dec, pol, t_gps)
+    return f_plus, f_cross
