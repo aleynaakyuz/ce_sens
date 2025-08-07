@@ -30,7 +30,7 @@ def bbh_pm_calc():
     end = args.end
     start = args.start
 
-    slen = 10
+    slen = 100
     srate = 1000
     tlen = slen * srate
     flen = tlen // 2 + 1
@@ -55,7 +55,7 @@ def bbh_pm_calc():
     pol = data_dic['polarization']
     tc = data_dic['tc']
 
-    psd = from_txt(psd_path, length=int(4000/0.01), delta_f=0.01, low_freq_cutoff=5.2)
+    psd = from_txt(psd_path, length=int(4000/df), delta_f=df, low_freq_cutoff=5.1)
 
     snr_l = []
     hf = h5py.File(out_path, 'w')
