@@ -17,7 +17,7 @@ def get_proj_strain(det, param, freq=False):
     pol = param['polarization']
     df = param['delta_f']
     
-    t_gps=1697205750
+    t_gps=param['tc']
     detec = Detector(det)
     hp, hc = get_fd_waveform(**param)
     hp, hc = check_length(hp, hc, df)
@@ -73,7 +73,7 @@ def get_proj(det, param, freq=False):
     pol = param['polarization']
     df = param['delta_f']
     
-    t_gps=1697205750
+    t_gps=param['tc']  
     detec = Detector(det)
     if freq:
         freq = hp.sample_frequencies.data
