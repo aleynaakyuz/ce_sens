@@ -29,6 +29,8 @@ early_warning_calc = "ce_sens.early_warning.early_warning_calc:early_warning_cal
 snr_calc = "ce_sens.snr_calc.snr_calc:snr_calc"
 bns_pm_calc = "ce_sens.post_merger.bns_pm_calc:bns_pm_calc"
 bbh_pm_calc = "ce_sens.post_merger.bbh_pm:bbh_pm_calc"
+distance_test = "ce_sens.pe_test.distance:check_distance"
+mchirp_test = "ce_sens.pe_test.mchirp:check_mchirp"
 
 [project.urls]
 "Homepage" = "https://github.com/aleynaakyuz/ce_sens"
