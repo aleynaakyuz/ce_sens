@@ -5,8 +5,10 @@ from pycbc.inference.io import loadfile
 def check_distance():
     parser = argparse.ArgumentParser()
     parser.add_argument("--results")
-    parser.add_argument("--config_override")
+    parser.add_argument("--config-override")
     parser.add_argument("--distance", type=float)
+    parser.add_argument("--low_bound", type=float)
+    parser.add_argument("--up-bound", type=float)
 
     opts = parser.parse_args()
     path = opts.results
@@ -24,17 +26,18 @@ def check_distance():
     w = max_d - min_d
     eps = frac * w
 
-    low_dist = 3
-    up_dist = 3
+    low_dist = opts.low_bound
+    up_dist = opts.up_bound
 
+    triggered = False
     if np.mean(d >= max_d - eps) > 0.001:
         print(path, 'max distance bound is not converged')
         triggered = True
-        up_dist = 4
+        up_dist = up_dist + 1
     if np.mean(d <= min_d + eps) > 0.001:
         print(path, 'min distance bound is not converged')
         triggered = True
-        low_dist = 4
+        low_dist = low_dist + 1
     if triggered:
         f = open(override_path, 'w')
         f.write(f"""
@@ -46,6 +49,3 @@ max-distance = {dist * up_dist}
         f.close()
     else:
         f = None
-    return f
-
-check_distance()

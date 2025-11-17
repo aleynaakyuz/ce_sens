@@ -7,6 +7,8 @@ def check_mchirp():
     parser.add_argument("--results")
     parser.add_argument("--config_override")
     parser.add_argument("--mchirp", type=float)
+    parser.add_argument("--low_bound", type=float)
+    parser.add_argument("--up-bound", type=float)
 
     opts = parser.parse_args()
     path = opts.results
@@ -24,8 +26,8 @@ def check_mchirp():
     w = max_m - min_m
     eps = frac * w
 
-    up_mchirp = 150
-    low_mchirp = 150
+    up_mchirp = opts.up_bound
+    low_mchirp = opts.low_bound
 
     print(np.mean(m >= max_m - eps))
     print(np.mean(m <= min_m + eps))
@@ -48,6 +50,3 @@ max-mchirp = {mchirp + up_mchirp}
         f.close()
     else:
         f = None
-    return f
-
-check_mchirp()
