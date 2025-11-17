@@ -5,9 +5,9 @@ from pycbc.inference.io import loadfile
 def check_mchirp():
     parser = argparse.ArgumentParser()
     parser.add_argument("--results")
-    parser.add_argument("--config_override")
+    parser.add_argument("--config-override")
     parser.add_argument("--mchirp", type=float)
-    parser.add_argument("--low_bound", type=float)
+    parser.add_argument("--low-bound", type=float)
     parser.add_argument("--up-bound", type=float)
 
     opts = parser.parse_args()
@@ -37,7 +37,7 @@ def check_mchirp():
     if np.mean(m <= min_m + eps) > 0.001:
         print(path, 'min mchirp bound is not converged')
         low_mchirp = low_mchirp + 50
-        
+
     f = open(override_path, 'w')
     f.write(f"""
 [prior-mchirp]

@@ -7,7 +7,7 @@ def check_distance():
     parser.add_argument("--results")
     parser.add_argument("--config-override")
     parser.add_argument("--distance", type=float)
-    parser.add_argument("--low_bound", type=float)
+    parser.add_argument("--low-bound", type=float)
     parser.add_argument("--up-bound", type=float)
 
     opts = parser.parse_args()
