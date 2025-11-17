@@ -33,20 +33,16 @@ def check_mchirp():
     print(np.mean(m <= min_m + eps))
     if np.mean(m >= max_m - eps) > 0.001:
         print(path, 'max mchirp bound is not converged')
-        triggered = True
         up_mchirp = up_mchirp + 50
     if np.mean(m <= min_m + eps) > 0.001:
         print(path, 'min mchirp bound is not converged')
-        triggered = True
         low_mchirp = low_mchirp + 50
-    if triggered:
-        f = open(override_path, 'w')
-        f.write(f"""
+        
+    f = open(override_path, 'w')
+    f.write(f"""
 [prior-mchirp]
 name = uniform
 min-mchirp = {max(mchirp - low_mchirp, 0.1)}
 max-mchirp = {mchirp + up_mchirp}
-    """)
-        f.close()
-    else:
-        f = None
+""")
+    f.close()

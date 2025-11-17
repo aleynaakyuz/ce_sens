@@ -29,23 +29,18 @@ def check_distance():
     low_dist = opts.low_bound
     up_dist = opts.up_bound
 
-    triggered = False
     if np.mean(d >= max_d - eps) > 0.001:
         print(path, 'max distance bound is not converged')
-        triggered = True
         up_dist = up_dist + 1
     if np.mean(d <= min_d + eps) > 0.001:
         print(path, 'min distance bound is not converged')
-        triggered = True
         low_dist = low_dist + 1
-    if triggered:
-        f = open(override_path, 'w')
-        f.write(f"""
+
+    f = open(override_path, 'w')
+    f.write(f"""
 [prior-distance]
 name = uniform_radius
 min-distance = {dist / low_dist}
 max-distance = {dist * up_dist}
-    """)
-        f.close()
-    else:
-        f = None
+""")
+    f.close()
