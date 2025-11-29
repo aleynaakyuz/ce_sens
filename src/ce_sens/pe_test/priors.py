@@ -7,7 +7,7 @@ def posterior_quantile_bounds(samples, q_low=0.005, q_high=0.995):
     high = np.quantile(samples, q_high)
     return low, high
 
-def additive_margin(low, high, pct=0.10):
+def additive_margin(low, high, pct=0.20):
     width = high - low
     low_m = low - pct * width
     high_m = high + pct * width
