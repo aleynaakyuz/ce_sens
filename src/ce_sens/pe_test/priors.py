@@ -17,10 +17,12 @@ def write_priors():
     parser = argparse.ArgumentParser()
     parser.add_argument("--results")
     parser.add_argument("--priors")
+    parser.add_argument("--nlive", type=int)
 
     opts = parser.parse_args()
     path = opts.results
     priors = opts.priors
+    nlive = opts.nlive
 
     data = loadfile(path, 'r')
     d = data.read_samples(parameters=['distance'])['distance']
@@ -52,5 +54,8 @@ max-q = {high_q}
 name = uniform
 min-mchirp = {low_mchirp}
 max-mchirp = {high_mchirp}
+
+[sampler]
+nlive = {nlive}
 """)
     f.close()
