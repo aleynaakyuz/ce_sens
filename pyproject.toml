@@ -31,6 +31,7 @@ bns_pm_calc = "ce_sens.post_merger.bns_pm_calc:bns_pm_calc"
 bbh_pm_calc = "ce_sens.post_merger.bbh_pm:bbh_pm_calc"
 distance_test = "ce_sens.pe_test.distance:check_distance"
 mchirp_test = "ce_sens.pe_test.mchirp:check_mchirp"
+write_priors = "ce_sens.pe_test.priors:write_priors"
 
 [project.urls]
 "Homepage" = "https://github.com/aleynaakyuz/ce_sens"
