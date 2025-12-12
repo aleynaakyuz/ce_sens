@@ -42,17 +42,17 @@ def write_priors():
     f.write(f"""
 [prior-distance]
 name = uniform_radius
-min-distance = {low_d}
+min-distance = {max(10, low_d)}
 max-distance = {high_d}
 
 [prior-q]
 name = uniform
-min-q = {low_q}
+min-q = {max(1, low_q)}
 max-q = {high_q}
 
 [prior-mchirp]
 name = uniform
-min-mchirp = {low_mchirp}
+min-mchirp = {max(0.1, low_mchirp)}
 max-mchirp = {high_mchirp}
 
 [sampler]
