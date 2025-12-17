@@ -17,7 +17,6 @@ def write_priors():
     parser = argparse.ArgumentParser()
     parser.add_argument("--results")
     parser.add_argument("--priors")
-    parser.add_argument("--nlive", type=int)
 
     opts = parser.parse_args()
     path = opts.results
@@ -54,8 +53,5 @@ max-q = {high_q}
 name = uniform
 min-mchirp = {max(0.1, low_mchirp)}
 max-mchirp = {high_mchirp}
-
-[sampler]
-nlive = {nlive}
 """)
     f.close()
