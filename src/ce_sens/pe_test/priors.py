@@ -21,7 +21,6 @@ def write_priors():
     opts = parser.parse_args()
     path = opts.results
     priors = opts.priors
-    nlive = opts.nlive
 
     data = loadfile(path, 'r')
     d = data.read_samples(parameters=['distance'])['distance']
