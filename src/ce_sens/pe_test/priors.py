@@ -2,9 +2,13 @@ import numpy as np
 import argparse
 from pycbc.inference.io import loadfile  
 
-def posterior_quantile_bounds(samples, q_low=0.005, q_high=0.995):
+def posterior_quantile_bounds(samples, inj, q_low=0.005, q_high=0.995):
     low = np.quantile(samples, q_low)
     high = np.quantile(samples, q_high)
+    if inj < low:
+        low = inj
+    if inj > high:
+        high = inj
     return low, high
 
 def additive_margin(low, high, pct=0.20):
@@ -27,14 +31,18 @@ def write_priors():
     q = data.read_samples(parameters=['q'])['q']
     mchirp = data.read_samples(parameters=['mchirp'])['mchirp']
 
-    low_d, high_d = posterior_quantile_bounds(d)
-    low_d, high_d = additive_margin(low_d, high_d, pct=0.10)
+    inj_distance = data['injections'].attrs['distance']
+    inj_q = data['injections']['q'][:]
+    inj_mchirp = data['injections']['mchirp'][:]
 
-    low_q, high_q = posterior_quantile_bounds(q)
-    low_q, high_q = additive_margin(low_q, high_q, pct=0.10)
+    low_d, high_d = posterior_quantile_bounds(d, inj_distance)
+    low_d, high_d = additive_margin(low_d, high_d, pct=0.25)
 
-    low_mchirp, high_mchirp = posterior_quantile_bounds(mchirp)
-    low_mchirp, high_mchirp = additive_margin(low_mchirp, high_mchirp, pct=0.10)
+    low_q, high_q = posterior_quantile_bounds(q, inj_q)
+    low_q, high_q = additive_margin(low_q, high_q, pct=0.25)
+
+    low_mchirp, high_mchirp = posterior_quantile_bounds(mchirp, inj_mchirp)
+    low_mchirp, high_mchirp = additive_margin(low_mchirp, high_mchirp, pct=0.25)
 
     f = open(priors, 'w')
     f.write(f"""
