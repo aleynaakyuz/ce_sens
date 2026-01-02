@@ -32,8 +32,8 @@ def write_priors():
     mchirp = data.read_samples(parameters=['mchirp'])['mchirp']
 
     inj_distance = data['injections'].attrs['distance']
-    inj_q = data['injections']['q'][:]
-    inj_mchirp = data['injections']['mchirp'][:]
+    inj_q = data['injections']['q'][:][0]
+    inj_mchirp = data['injections']['mchirp'][:][0]
 
     low_d, high_d = posterior_quantile_bounds(d, inj_distance)
     low_d, high_d = additive_margin(low_d, high_d, pct=0.25)
