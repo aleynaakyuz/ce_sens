@@ -29,7 +29,7 @@ def write_priors():
     data = loadfile(path, 'r')
     d = data.read_samples(parameters=['distance'])['distance']
     q = data.read_samples(parameters=['q'])['q']
-    mchirp = data.read_samples(parameters=['mchirp'])['mchirp']
+    mchirp = data.d(parameters=['mchirp'])['mchirp']
 
     inj_distance = data['injections'].attrs['distance']
     inj_q = data['injections']['q'][:]
@@ -46,6 +46,10 @@ def write_priors():
 
     f = open(priors, 'w')
     f.write(f"""
+[model]
+marginalize_vector_samples = 10000
+marginalize_distance_samples = 10000
+
 [prior-distance]
 name = uniform_radius
 min-distance = {max(10, low_d)}
@@ -58,7 +62,7 @@ max-q = {high_q}
 
 [prior-mchirp]
 name = uniform
-min-mchirp = {max(0.1, low_mchirp)}
+min-mchirp = {max(10, low_mchirp)}
 max-mchirp = {high_mchirp}
 """)
     f.close()
