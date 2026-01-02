@@ -29,7 +29,7 @@ def write_priors():
     data = loadfile(path, 'r')
     d = data.read_samples(parameters=['distance'])['distance']
     q = data.read_samples(parameters=['q'])['q']
-    mchirp = data.d(parameters=['mchirp'])['mchirp']
+    mchirp = data.read_samples(parameters=['mchirp'])['mchirp']
 
     inj_distance = data['injections'].attrs['distance']
     inj_q = data['injections']['q'][:]
