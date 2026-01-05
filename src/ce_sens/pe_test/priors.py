@@ -2,19 +2,27 @@ import numpy as np
 import argparse
 from pycbc.inference.io import loadfile  
 
-def posterior_quantile_bounds(samples, inj, q_low=0.005, q_high=0.995):
+def posterior_quantile_bounds(samples, q_low=0.005, q_high=0.995):
     low = np.quantile(samples, q_low)
     high = np.quantile(samples, q_high)
-    if inj < low:
-        low = inj
-    if inj > high:
-        high = inj
     return low, high
 
-def additive_margin(low, high, pct=0.20):
+def additive_margin(low, high, inj, pct=0.20):
+    add_inj = False
+    if inj < low:
+        low = inj
+        add_inj = True
+    if inj > high:
+        high = inj
+        add_inj = True
     width = high - low
-    low_m = low - pct * width
-    high_m = high + pct * width
+    if not add_inj:
+        low_m = low - pct * width
+        high_m = high + pct * width
+    else:
+        pct = pct * 2
+        low_m = low - pct * width
+        high_m = high + pct * width
     return low_m, high_m
 
 def write_priors():
@@ -35,21 +43,17 @@ def write_priors():
     inj_q = data['injections']['q'][:][0]
     inj_mchirp = data['injections']['mchirp'][:][0]
 
-    low_d, high_d = posterior_quantile_bounds(d, inj_distance)
-    low_d, high_d = additive_margin(low_d, high_d, pct=0.25)
+    low_d, high_d = posterior_quantile_bounds(d)
+    low_d, high_d = additive_margin(low_d, high_d, inj_distance, pct=0.35)
 
-    low_q, high_q = posterior_quantile_bounds(q, inj_q)
-    low_q, high_q = additive_margin(low_q, high_q, pct=0.25)
+    low_q, high_q = posterior_quantile_bounds(q)
+    low_q, high_q = additive_margin(low_q, high_q, inj_q, pct=0.35)
 
-    low_mchirp, high_mchirp = posterior_quantile_bounds(mchirp, inj_mchirp)
-    low_mchirp, high_mchirp = additive_margin(low_mchirp, high_mchirp, pct=0.25)
+    low_mchirp, high_mchirp = posterior_quantile_bounds(mchirp)
+    low_mchirp, high_mchirp = additive_margin(low_mchirp, high_mchirp, inj_mchirp, pct=0.35)
 
     f = open(priors, 'w')
     f.write(f"""
-[model]
-marginalize_vector_samples = 10000
-marginalize_distance_samples = 10000
-
 [prior-distance]
 name = uniform_radius
 min-distance = {max(10, low_d)}
