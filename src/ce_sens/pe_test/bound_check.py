@@ -15,7 +15,7 @@ def bound_check():
         help="Prior bounds as: PARAM LOW HIGH",
     )
 
-    parser.add_argument("--csv-path", type=float)    
+    parser.add_argument("--csv-path")    
 
     opts = parser.parse_args()
     path = opts.results
