@@ -7,13 +7,9 @@ def bound_check():
     parser = argparse.ArgumentParser()
     parser.add_argument("--results")
 
-    parser.add_argument(
-        "--prior-bound",
-        nargs=3,
-        action="append",
-        metavar=("PARAM", "LOW", "HIGH"),
-        help="Prior bounds as: PARAM LOW HIGH",
-    )
+    parser.add_argument("--distance-bound", nargs=2, type=float)
+    parser.add_argument("--q-bound", nargs=2, type=float)
+    parser.add_argument("--mchirp-bound", nargs=2, type=float)
 
     parser.add_argument("--csv-path")    
 
@@ -21,10 +17,16 @@ def bound_check():
     path = opts.results
     csv_path = opts.csv_path
 
-    prior_bounds = {
-        param: [float(low), float(high)]
-        for param, low, high in (opts.prior_bound or [])
-    }
+    prior_bounds = {}
+
+    if opts.distance_bound:
+        prior_bounds["distance"] = opts.distance_bound
+
+    if opts.q_bound:
+        prior_bounds["q"] = opts.q_bound
+
+    if opts.mchirp_bound:
+        prior_bounds["mchirp"] = opts.mchirp_bound
 
     data = loadfile(path, 'r')
     d = data.read_samples(parameters=['distance'])['distance']
