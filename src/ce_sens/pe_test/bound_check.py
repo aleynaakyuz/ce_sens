@@ -2,6 +2,26 @@ import numpy as np
 import argparse
 import csv
 from pycbc.inference.io import loadfile  
+from pycbc.workflow.configuration import WorkflowConfigParser
+
+
+def load_prior_bounds(config_file):
+	config = WorkflowConfigParser()
+	config.read(config_file.storage_path)
+
+	prior_bounds = {}
+
+	for section in config.sections():
+		if section.startswith("prior-"):
+			param = section.replace("prior-", "")
+			min_key = f"min-{param}"
+			max_key = f"max-{param}"
+
+			prior_bounds[param] = [
+				config.getfloat(section, min_key),
+				config.getfloat(section, max_key),
+			]
+	return prior_bounds
 
 def bound_check():
     parser = argparse.ArgumentParser()
@@ -11,22 +31,25 @@ def bound_check():
     parser.add_argument("--q-bound", nargs=2, type=float)
     parser.add_argument("--mchirp-bound", nargs=2, type=float)
 
-    parser.add_argument("--csv-path")    
+    parser.add_argument("--csv-path")
+    parser.add_argument("--priors")
+    
+        
 
     opts = parser.parse_args()
     path = opts.results
     csv_path = opts.csv_path
+    priors = opts.priors
 
-    prior_bounds = {}
+    if priors:
+        prior_bounds = load_prior_bounds(priors)
 
-    if opts.distance_bound:
-        prior_bounds["distance"] = opts.distance_bound
-
-    if opts.q_bound:
-        prior_bounds["q"] = opts.q_bound
-
-    if opts.mchirp_bound:
-        prior_bounds["mchirp"] = opts.mchirp_bound
+    else:
+         prior_bounds = {}
+         prior_bounds["distance"] = opts.distance_bound
+         prior_bounds["q"] = opts.q_bound
+         prior_bounds["mchirp"] = opts.mchirp_bound
+         
 
     data = loadfile(path, 'r')
     d = data.read_samples(parameters=['distance'])['distance']
