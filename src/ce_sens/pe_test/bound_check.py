@@ -34,7 +34,6 @@ def bound_check():
     parser.add_argument("--csv-path")
     parser.add_argument("--priors")
     
-        
 
     opts = parser.parse_args()
     path = opts.results
@@ -85,9 +84,20 @@ def bound_check():
     else: 
         min_mchirp = "Converged"
 
+    cfg_str = data['config_file']['0'][:].tobytes().decode('latin-1')
+
+    for line in cfg_str.splitlines():
+        if line.strip().startswith("injection-file"):
+            inj_file = line
+    
+
+    for line in cfg_str.splitlines():
+        if line.strip().startswith("nlive"):
+            nlive = line
 
     row = [
-    path,
+    inj_file,
+    nlive,
     max_dist,
     min_dist,
     max_q,

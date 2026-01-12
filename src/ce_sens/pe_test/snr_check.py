@@ -22,9 +22,20 @@ def snr_check():
     difference_snr = abs(estimated_snr - injection_snr) / injection_snr * 100
     difference_flag = difference_snr > 5.0
 
+    cfg_str = data['config_file']['0'][:].tobytes().decode('latin-1')
+
+    for line in cfg_str.splitlines():
+        if line.strip().startswith("injection-file"):
+            inj_file = line
+    
+
+    for line in cfg_str.splitlines():
+        if line.strip().startswith("nlive"):
+            nlive = line
 
     row = [
-    path,
+    inj_file,
+    nlive,
 	injection_snr,
 	estimated_snr,
 	difference_snr,
