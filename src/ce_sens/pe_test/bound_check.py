@@ -7,7 +7,7 @@ from pycbc.workflow.configuration import WorkflowConfigParser
 
 def load_prior_bounds(config_file):
 	config = WorkflowConfigParser()
-	config.read(config_file.storage_path)
+	config.read(config_file)
 
 	prior_bounds = {}
 
@@ -71,6 +71,7 @@ def bound_check():
     else:
         max_q = "Converged"
     if np.mean(q < 1.01 * prior_bounds['q'][0]) > 0.01: # Checks if more than 1% of samples are within 1% of the min prior bound
+        ## TODO: make sure this is not triggered when q_min = 1.
         min_q = "Min q bound is not converged"
     else: 
         min_q = "Converged"
