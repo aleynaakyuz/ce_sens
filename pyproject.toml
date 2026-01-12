@@ -34,6 +34,7 @@ mchirp_test = "ce_sens.pe_test.mchirp:check_mchirp"
 write_priors = "ce_sens.pe_test.priors:write_priors"
 ks_test = "ce_sens.pe_test.ks_test:ks_test"
 bound_check = "ce_sens.pe_test.bound_check:bound_check"
+snr_check = "ce_sens.pe_test.snr_check:snr_check"
 
 
 [project.urls]
