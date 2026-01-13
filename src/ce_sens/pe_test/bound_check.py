@@ -96,6 +96,7 @@ def bound_check():
             nlive = line
 
     row = [
+    path,     
     inj_file,
     nlive,
     max_dist,

@@ -50,7 +50,7 @@ def write_priors():
     low_q, high_q = additive_margin(low_q, high_q, inj_q, pct=0.35)
 
     low_mchirp, high_mchirp = posterior_quantile_bounds(mchirp)
-    low_mchirp, high_mchirp = additive_margin(low_mchirp, high_mchirp, inj_mchirp, pct=0.35)
+    low_mchirp, high_mchirp = additive_margin(low_mchirp, high_mchirp, inj_mchirp, pct=0.40)
 
     f = open(priors, 'w')
     f.write(f"""

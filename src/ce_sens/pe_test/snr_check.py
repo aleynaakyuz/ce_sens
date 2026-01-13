@@ -34,6 +34,7 @@ def snr_check():
             nlive = line
 
     row = [
+    path,
     inj_file,
     nlive,
 	injection_snr,
