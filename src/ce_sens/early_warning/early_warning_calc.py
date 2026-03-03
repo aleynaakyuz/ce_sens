@@ -13,14 +13,14 @@ import h5py
 
 def early_warning_calc():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", type=str, help="path to parameters")
-    parser.add_argument("start", type=int)
-    parser.add_argument("end", type=int)
+    parser.add_argument("--path", type=str, help="path to parameters")
+    parser.add_argument("--start", type=int)
+    parser.add_argument("--end", type=int)
     parser.add_argument("--dets", nargs="+", required=True,
                         help="Detector names")
     parser.add_argument("--psds", nargs="+", required=True,
                         help="PSD paths")
-    parser.add_argument("out_path", type=str)
+    parser.add_argument("--out_path", type=str)
 
     args = parser.parse_args()
 
