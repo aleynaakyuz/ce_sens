@@ -20,7 +20,7 @@ def early_warning_calc():
                         help="Detector names")
     parser.add_argument("--psds", nargs="+", required=True,
                         help="PSD paths")
-    parser.add_argument("--out_path", type=str)
+    parser.add_argument("--out-path", type=str)
 
     args = parser.parse_args()
 
