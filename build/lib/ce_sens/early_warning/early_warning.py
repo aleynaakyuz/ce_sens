@@ -3,6 +3,7 @@ from pycbc.waveform.spa_tmplt import spa_length_in_time
 from pycbc.types.frequencyseries import FrequencySeries
 from scipy.optimize import minimize
 from ce_sens.utils import calculate_snr
+from scipy.signal.windows import tukey
 
 df_min = 0.0001
 f_max = 4000
@@ -62,7 +63,9 @@ def stitching_psds(psd_1, psd_2, lag, switch_duration, param):
     first_arr = psd_1.data[:start_inx]
     second_arr = psd_2.data[end_inx:]
     margin = abs(end_inx - start_inx)
-    gap = np.ones(margin) #* 10**(-47)
-    new_psd = np.concatenate((first_arr, gap, second_arr))
-    new_psd_fs = FrequencySeries(new_psd, delta_f=df)
-    return new_psd_fs, sf, ef
+    y_interp = np.logspace(np.log10(first_arr[-1]), np.log10(second_arr[0]), num=margin)
+    taper_window = tukey(len(y_interp), alpha=0.8) 
+    tapered_y_interp = y_interp * ((taper_window * 100) + 1)
+    psd_connected = np.concatenate((first_arr, tapered_y_interp, second_arr))
+    psd_connected_fs = FrequencySeries(psd_connected, delta_f=df)
+    return psd_connected_fs, sf, ef
